@@ -10,8 +10,15 @@ export 'model/invoice.dart';
 export 'model/customer.dart';
 export 'model/supplier.dart';
 
+/// A utility class for common PDF operations like image conversion and extraction.
 class PdfUtils {
   /// Converts a list of image paths into a single PDF file.
+  /// 
+  /// [imagePaths] is a list of absolute paths to the images.
+  /// [outputFileName] is the desired name for the generated PDF (without extension).
+  /// [format] defaults to A4.
+  /// 
+  /// Returns a [File] object pointing to the generated PDF in the temporary directory.
   static Future<File> imagesToPdf({
     required List<String> imagePaths,
     required String outputFileName,
@@ -38,8 +45,12 @@ class PdfUtils {
   }
 
   /// Extracts all pages from a PDF as images (JPEGs).
-  /// Returns a list of paths to the extracted images.
-  /// [onProgress] returns (current, total)
+  /// 
+  /// [pdfPath] is the absolute path to the PDF file.
+  /// [outputDirectory] is the directory where the images will be saved.
+  /// [onProgress] is an optional callback that returns (current, total) page count.
+  /// 
+  /// Returns a list of paths to the extracted image files.
   static Future<List<String>> pdfToImages({
     required String pdfPath,
     required String outputDirectory,

@@ -9,7 +9,14 @@ import 'model/customer.dart';
 import 'model/invoice.dart';
 import 'model/supplier.dart';
 
+/// A generator class that creates professional PDF invoices from an [Invoice] model.
 class PdfInvoiceGenerator {
+  /// Generates a PDF invoice file from the provided [invoice] data.
+  /// 
+  /// The generated PDF is saved in the temporary directory with a filename
+  /// based on the invoice number.
+  /// 
+  /// Returns a [File] object pointing to the generated PDF.
   static Future<File> generate(Invoice invoice) async {
     final pdf = pw.Document();
 
