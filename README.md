@@ -14,9 +14,9 @@ A comprehensive Flutter plugin for professional PDF manipulation and generation.
 ## Showcase
 
 <p align="center">
-  <img src="doc/screenshots/Screenshot_1773776766.png" width="30%" alt="Invoice Demo" />
-  <img src="doc/screenshots/Screenshot_1773776793.png" width="30%" alt="App Home" />
-  <img src="doc/screenshots/Screenshot_1773776809.png" width="30%" alt="PDF Extraction" />
+  <img src="doc/screenshots/invoice_generator.png" width="30%" alt="Invoice Demo" />
+  <img src="doc/screenshots/image_to_pdf.png" width="30%" alt="App Home" />
+  <img src="doc/screenshots/pdf_to_images.png" width="30%" alt="PDF Extraction" />
 </p>
 
 ## Features

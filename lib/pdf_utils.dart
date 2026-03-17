@@ -1,14 +1,19 @@
 import 'dart:io';
-import 'package:pdf/pdf.dart' hide PdfDocument;
+import 'package:pdf/pdf.dart' as pdf_lib;
 import 'package:pdf/widgets.dart' as pw;
-import 'package:pdfx/pdfx.dart';
+import 'package:pdfx/pdfx.dart' as pdfx;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:pdf_worker/pdf_worker.dart';
+import 'package:flutter_pdf_text/flutter_pdf_text.dart';
 
 export 'invoice_generator.dart';
 export 'model/invoice.dart';
 export 'model/customer.dart';
 export 'model/supplier.dart';
+export 'pdf_viewer.dart';
+export 'package:pdfx/pdfx.dart'
+    show PdfController, PdfControllerPinch, PdfDocument;
 
 /// A utility class for common PDF operations like image conversion and extraction.
 class PdfUtils {
@@ -22,7 +27,8 @@ class PdfUtils {
   static Future<File> imagesToPdf({
     required List<String> imagePaths,
     required String outputFileName,
-    PdfPageFormat format = PdfPageFormat.a4,
+    pdf_lib.PdfPageFormat format = pdf_lib.PdfPageFormat.a4,
+    String? userPassword,
   }) async {
     final pdf = pw.Document();
 
@@ -41,6 +47,15 @@ class PdfUtils {
     final outputDir = await getTemporaryDirectory();
     final file = File(p.join(outputDir.path, '$outputFileName.pdf'));
     await file.writeAsBytes(await pdf.save());
+
+    if (userPassword != null && userPassword.isNotEmpty) {
+      await PdfWorker().lock(
+        filePath: file.path,
+        userPassword: userPassword,
+        ownerPassword: userPassword,
+      );
+    }
+
     return file;
   }
 
@@ -54,38 +69,150 @@ class PdfUtils {
   static Future<List<String>> pdfToImages({
     required String pdfPath,
     required String outputDirectory,
+    String? password,
     Function(int current, int total)? onProgress,
   }) async {
     final List<String> imagePaths = [];
-    final document = await PdfDocument.openFile(pdfPath);
+    String effectivePath = pdfPath;
+    File? tempFile;
 
-    final dir = Directory(outputDirectory);
-    if (!await dir.exists()) {
-      await dir.create(recursive: true);
-    }
-
-    for (int i = 1; i <= document.pagesCount; i++) {
-      onProgress?.call(i, document.pagesCount);
-      final page = await document.getPage(i);
-      final pageImage = await page.render(
-        width: page.width * 2, // Scale up for better quality
-        height: page.height * 2,
-        format: PdfPageImageFormat.jpeg,
-        quality: 90,
-      );
-
-      if (pageImage != null) {
-        final imageName =
-            'extracted_${DateTime.now().millisecondsSinceEpoch}_$i.jpg';
-        final imagePath = p.join(outputDirectory, imageName);
-        final imageFile = File(imagePath);
-        await imageFile.writeAsBytes(pageImage.bytes);
-        imagePaths.add(imagePath);
+    try {
+      if (password != null && password.isNotEmpty) {
+        final tempDir = await getTemporaryDirectory();
+        final tempPath = p.join(
+          tempDir.path,
+          'temp_unlock_${DateTime.now().millisecondsSinceEpoch}.pdf',
+        );
+        tempFile = await File(pdfPath).copy(tempPath);
+        await PdfWorker().unlock(filePath: tempFile.path, password: password);
+        effectivePath = tempFile.path;
       }
-      await page.close();
+
+      final document = await pdfx.PdfDocument.openFile(effectivePath);
+
+      final dir = Directory(outputDirectory);
+      if (!await dir.exists()) {
+        await dir.create(recursive: true);
+      }
+
+      for (int i = 1; i <= document.pagesCount; i++) {
+        onProgress?.call(i, document.pagesCount);
+        final page = await document.getPage(i);
+        final pageImage = await page.render(
+          width: page.width * 2, // Scale up for better quality
+          height: page.height * 2,
+          format: pdfx.PdfPageImageFormat.jpeg,
+          quality: 90,
+        );
+
+        if (pageImage != null) {
+          final imageName =
+              'extracted_${DateTime.now().millisecondsSinceEpoch}_$i.jpg';
+          final imagePath = p.join(outputDirectory, imageName);
+          final imageFile = File(imagePath);
+          await imageFile.writeAsBytes(pageImage.bytes);
+          imagePaths.add(imagePath);
+        }
+        await page.close();
+      }
+
+      await document.close();
+    } finally {
+      if (tempFile != null && await tempFile.exists()) {
+        await tempFile.delete();
+      }
     }
 
-    await document.close();
     return imagePaths;
+  }
+
+  /// Adds password protection to an existing PDF.
+  static Future<File> protectPdf({
+    required String inputPath,
+    required String password,
+    required String outputFileName,
+  }) async {
+    final outputDir = await getTemporaryDirectory();
+    final outputFile = File(p.join(outputDir.path, '$outputFileName.pdf'));
+
+    // Copy input to output first so we don't modify the original if needed
+    await File(inputPath).copy(outputFile.path);
+
+    await PdfWorker().lock(
+      filePath: outputFile.path,
+      userPassword: password,
+      ownerPassword: password,
+    );
+    return outputFile;
+  }
+
+  /// Removes password protection from an existing PDF.
+  static Future<File> unlockPdf({
+    required String inputPath,
+    required String password,
+    required String outputFileName,
+  }) async {
+    final outputDir = await getTemporaryDirectory();
+    final outputFile = File(p.join(outputDir.path, '$outputFileName.pdf'));
+
+    // Copy input to output first
+    await File(inputPath).copy(outputFile.path);
+
+    await PdfWorker().unlock(filePath: outputFile.path, password: password);
+    return outputFile;
+  }
+
+  /// Extracts the full text from a PDF.
+  static Future<String> getFullText(String pdfPath) async {
+    final doc = await PDFDoc.fromPath(pdfPath);
+    return await doc.text;
+  }
+
+  /// Extracts text from a specific page of a PDF.
+  static Future<String> getPageText(String pdfPath, int pageNumber) async {
+    final doc = await PDFDoc.fromPath(pdfPath);
+    if (pageNumber > 0 && pageNumber <= doc.length) {
+      return await doc.pageAt(pageNumber).text;
+    }
+    return "";
+  }
+
+  /// Extracts text from a range of pages in a PDF.
+  static Future<String> getRangeText(
+    String pdfPath, {
+    required int start,
+    required int end,
+  }) async {
+    final doc = await PDFDoc.fromPath(pdfPath);
+    String fullResult = "";
+    for (int i = start; i <= end; i++) {
+      if (i > 0 && i <= doc.length) {
+        final text = await doc.pageAt(i).text;
+        fullResult += "--- Page $i ---\n$text\n\n";
+      }
+    }
+    return fullResult;
+  }
+
+  /// Gets the number of pages in a PDF.
+  static Future<int> getPageCount(String pdfPath) async {
+    final doc = await PDFDoc.fromPath(pdfPath);
+    return doc.length;
+  }
+
+  /// Gets the metadata info of a PDF.
+  static Future<Map<String, dynamic>> getDocInfo(String pdfPath) async {
+    final doc = await PDFDoc.fromPath(pdfPath);
+    final info = doc.info;
+    return {
+      "author": info.author,
+      "creationDate": info.creationDate?.toIso8601String(),
+      "modificationDate": info.modificationDate?.toIso8601String(),
+      "creator": info.creator,
+      "producer": info.producer,
+      "keywords": info.keywords,
+      "title": info.title,
+      "subject": info.subject,
+    };
   }
 }
