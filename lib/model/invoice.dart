@@ -6,12 +6,16 @@ class Invoice {
   final Supplier supplier;
   final Customer customer;
   final List<InvoiceItem> items;
+  final String currencySymbol;
+  final String? customQrPath;
 
   const Invoice({
     required this.info,
     required this.supplier,
     required this.customer,
     required this.items,
+    this.currencySymbol = '\$',
+    this.customQrPath,
   });
 }
 
