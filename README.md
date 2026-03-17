@@ -3,7 +3,21 @@
 A comprehensive Flutter plugin for professional PDF manipulation and generation.
 
 [![pub package](https://img.shields.io/pub/v/pdf_utils.svg)](https://pub.dev/packages/pdf_utils)
+[![Dart](https://img.shields.io/badge/language-Dart-blue.svg)](https://dart.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/rashbip/pdf_utils)
+
+[**Pub.dev**](https://pub.dev/packages/pdf_utils) | [**Repository**](https://github.com/rashbip/pdf_utils) | [**Issues**](https://github.com/rashbip/pdf_utils/issues) | [**Documentation**](doc/invoice_generation.md)
+
+---
+
+## Showcase
+
+<p align="center">
+  <img src="doc/screenshots/Screenshot_1773776766.png" width="30%" alt="Invoice Demo" />
+  <img src="doc/screenshots/Screenshot_1773776793.png" width="30%" alt="App Home" />
+  <img src="doc/screenshots/Screenshot_1773776809.png" width="30%" alt="PDF Extraction" />
+</p>
 
 ## Features
 
@@ -18,8 +32,7 @@ Add `pdf_utils` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  pdf_utils:
-    path: ./plugins/pdf_utils # Or use version from pub.dev
+  pdf_utils: ^1.0.0
 ```
 
 ## Quick Start
@@ -71,9 +84,9 @@ List<String> images = await PdfUtils.pdfToImages(
 
 ## Documentation
 
-For more detailed guides, check out the [docs](docs/) directory:
-- [Invoice Generation](docs/invoice_generation.md)
-- [PDF Manipulation (Conversion & Extraction)](docs/pdf_manipulation.md)
+For more detailed guides, check out the [doc](doc/) directory:
+- [Invoice Generation](doc/invoice_generation.md)
+- [PDF Manipulation (Conversion & Extraction)](doc/pdf_manipulation.md)
 
 ## Example App
 
