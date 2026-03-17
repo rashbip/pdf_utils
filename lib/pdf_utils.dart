@@ -5,6 +5,11 @@ import 'package:pdfx/pdfx.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+export 'invoice_generator.dart';
+export 'model/invoice.dart';
+export 'model/customer.dart';
+export 'model/supplier.dart';
+
 class PdfUtils {
   /// Converts a list of image paths into a single PDF file.
   static Future<File> imagesToPdf({
@@ -34,9 +39,11 @@ class PdfUtils {
 
   /// Extracts all pages from a PDF as images (JPEGs).
   /// Returns a list of paths to the extracted images.
+  /// [onProgress] returns (current, total)
   static Future<List<String>> pdfToImages({
     required String pdfPath,
     required String outputDirectory,
+    Function(int current, int total)? onProgress,
   }) async {
     final List<String> imagePaths = [];
     final document = await PdfDocument.openFile(pdfPath);
@@ -47,6 +54,7 @@ class PdfUtils {
     }
 
     for (int i = 1; i <= document.pagesCount; i++) {
+      onProgress?.call(i, document.pagesCount);
       final page = await document.getPage(i);
       final pageImage = await page.render(
         width: page.width * 2, // Scale up for better quality
