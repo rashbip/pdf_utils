@@ -1,64 +1,81 @@
 package com.rashbip.pdf_utils
 
-import com.tom_roush.pdfbox.pdmodel.PDDocument
+import android.app.Activity
+import android.content.ContentResolver
+import androidx.core.net.toUri
+import com.itextpdf.kernel.pdf.PdfDocument
+import com.itextpdf.kernel.pdf.PdfReader
+import com.itextpdf.kernel.pdf.PdfWriter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileNotFoundException
 
-class PdfMerger {
-    fun choosePagesIndexToMerge(
-            inputPath: String,
-            outputPath: String,
-            pagesIndex: List<Int>,
-            onProgress: ((current: Int, total: Int) -> Unit)? = null
-    ): String {
-        val file = File(inputPath)
-        if (!file.exists()) {
-            throw FileNotFoundException("File does not exist: $inputPath")
-        }
-        val sourceDocument = PDDocument.load(file)
-        val mergedDocument = PDDocument()
+// For merging multiple pdf files.
+suspend fun getMergedPDFPath(
+    sourceFilesPaths: List<String>,
+    context: Activity,
+): String? {
 
-        if (pagesIndex.isEmpty()) {
-            throw IllegalArgumentException("Pages index is empty")
-        }
-        if (pagesIndex.any { it < 0 || it >= sourceDocument.numberOfPages }) {
-            throw IllegalArgumentException("Pages index is out of range")
-        }
-        pagesIndex.forEachIndexed { index, pageNumber ->
-            val page = sourceDocument.getPage(pageNumber)
-            mergedDocument.addPage(page)
-            onProgress?.invoke(index + 1, pagesIndex.size)
+    val resultPDFPath: String?
+
+    withContext(Dispatchers.IO) {
+
+        val utils = Utils()
+
+        val begin = System.nanoTime()
+
+        val contentResolver: ContentResolver = context.contentResolver
+
+        val pdfWriterFile: File = File.createTempFile("writerTempFile", ".pdf")
+
+        val pdfWriter = PdfWriter(pdfWriterFile)
+
+        pdfWriter.setSmartMode(true)
+        pdfWriter.compressionLevel = 9
+
+        val pdfDocument = PdfDocument(pdfWriter)
+
+        // One should call this method to preserve the outlines of the source pdf file, otherwise they
+        // will be absent in the resultant document to which we copy pages. In this particular sample,
+        // we copy pages from two documents into the third one, so we would like to keep the outlines
+        // from both documents.
+        pdfDocument.initializeOutlines()
+
+        for (i in sourceFilesPaths.indices) {
+
+            val uri = utils.getURI(sourceFilesPaths[i])
+
+            val pdfReaderFile: File = File.createTempFile("readerTempFile", ".pdf")
+            utils.copyDataFromSourceToDestDocument(
+                sourceFileUri = uri,
+                destinationFileUri = pdfReaderFile.toUri(),
+                contentResolver = contentResolver
+            )
+
+            val pdfReader = PdfReader(pdfReaderFile).setUnethicalReading(true)
+            pdfReader.setMemorySavingMode(true)
+
+            val sourcePdfDoc = PdfDocument(pdfReader)
+
+            sourcePdfDoc.copyPagesTo(
+                1, sourcePdfDoc.numberOfPages, pdfDocument
+            )
+
+            sourcePdfDoc.close()
+            pdfReader.close()
+
+            utils.deleteTempFiles(listOfTempFiles = listOf(pdfReaderFile))
+
         }
 
-        mergedDocument.save(File(outputPath))
+        pdfDocument.close()
+        pdfWriter.close()
 
-        sourceDocument.close()
-        mergedDocument.close()
-        return outputPath
+        val end = System.nanoTime()
+        println("Elapsed time in nanoseconds: ${end - begin}")
+
+        resultPDFPath = pdfWriterFile.path
     }
 
-    fun mergePdfFiles(filesPath: List<String>, outputPath: String): String {
-        val files = filesPath.map { File(it) }
-        if (files.any { !it.exists() }) {
-            throw FileNotFoundException("File does not exist: ${filesPath.joinToString(", ")}")
-        }
-        val sourceDocuments = files.map { PDDocument.load(it) }
-        val mergedDocument = PDDocument()
-        sourceDocuments.forEach { doc ->
-            val pages = doc.pages // 这是 PDPageTree
-            pages.forEach { page -> mergedDocument.addPage(page) }
-        }
-        mergedDocument.save(File(outputPath))
-        sourceDocuments.forEach { it.close() }
-        mergedDocument.close()
-        return outputPath
-    }
-
-    fun mergeImagesToPdf(
-        imagesPath: List<String>,
-        outputPath: String,
-        config: ImagesToPdfConfig? = null,
-    ): String {
-        return ImagesToPdfHelper.imagesToPdf(imagesPath, outputPath, config)
-    }
+    return resultPDFPath
 }

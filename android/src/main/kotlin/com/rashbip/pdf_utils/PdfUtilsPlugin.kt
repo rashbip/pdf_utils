@@ -391,8 +391,8 @@ class PdfUtilsPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 "length" to length,
                 "info" to hashMapOf(
                     "author" to (info.author ?: ""),
-                    "creationDate" to (info.moreInfo["CreationDate"] ?: ""),
-                    "modificationDate" to (info.moreInfo["ModDate"] ?: ""),
+                    "creationDate" to (info.getMoreInfo("CreationDate") ?: ""),
+                    "modificationDate" to (info.getMoreInfo("ModDate") ?: ""),
                     "creator" to (info.creator ?: ""),
                     "producer" to (info.producer ?: ""),
                     "keywords" to (info.keywords?.split(",")?.map { it.trim() } ?: listOf<String>()),

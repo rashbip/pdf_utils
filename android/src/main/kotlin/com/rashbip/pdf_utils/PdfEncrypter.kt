@@ -4,14 +4,15 @@ import android.app.Activity
 import android.content.ContentResolver
 import android.util.Log
 import androidx.core.net.toUri
-import com.deepanshuchaudhary.pdf_manipulator.PdfManipulatorPlugin.Companion.LOG_TAG
-import com.itextpdf.kernel.exceptions.BadPasswordException
-import com.itextpdf.kernel.exceptions.PdfException
+import com.itextpdf.kernel.crypto.BadPasswordException
+import com.itextpdf.kernel.PdfException
 import com.itextpdf.kernel.pdf.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.OutputStream
+
+private const val LOG_TAG = "PdfEncrypter"
 
 // For encrypting pdf.
 suspend fun getPdfEncrypted(

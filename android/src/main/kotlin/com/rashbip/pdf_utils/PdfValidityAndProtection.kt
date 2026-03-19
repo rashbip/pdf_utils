@@ -3,9 +3,8 @@ package com.rashbip.pdf_utils
 import android.app.Activity
 import android.content.ContentResolver
 import android.util.Log
-import com.deepanshuchaudhary.pdf_manipulator.PdfManipulatorPlugin.Companion.LOG_TAG
-import com.itextpdf.kernel.exceptions.BadPasswordException
-import com.itextpdf.kernel.exceptions.PdfException
+import com.itextpdf.kernel.crypto.BadPasswordException
+import com.itextpdf.kernel.PdfException
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.PdfEncryptor
 import com.itextpdf.kernel.pdf.PdfReader
@@ -13,6 +12,8 @@ import com.itextpdf.kernel.pdf.ReaderProperties
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.InputStream
+
+private const val LOG_TAG = "PdfValidity"
 
 // For checking pdf validity and encryption.
 suspend fun getPdfValidityAndProtection(
