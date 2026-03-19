@@ -34,7 +34,7 @@ Add `pdf_utils` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  pdf_utils: ^1.2.0
+  pdf_utils: ^2.0.0
 ```
 
 ## Quick Start

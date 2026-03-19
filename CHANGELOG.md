@@ -1,4 +1,4 @@
-# 1.2.0
+# 2.0.0
 
 * **Standalone Implementation**: Removed external dependencies (`pdf_worker` and `flutter_pdf_text`).
 * **Native PDF Processing**: Integrated PDFBox (Android) and PDFKit (iOS) natively for faster and more reliable processing.
