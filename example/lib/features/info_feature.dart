@@ -1,59 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:pdf_utils/pdf_utils.dart';
-import 'package:open_filex/open_filex.dart';
 import 'package:file_picker/file_picker.dart';
 
-class PdfProtectionFeature extends StatefulWidget {
+class InfoFeature extends StatefulWidget {
   final Function(String) onStatusChange;
-  const PdfProtectionFeature({super.key, required this.onStatusChange});
+  const InfoFeature({super.key, required this.onStatusChange});
 
   @override
-  State<PdfProtectionFeature> createState() => _PdfProtectionFeatureState();
+  State<InfoFeature> createState() => _InfoFeatureState();
 }
 
-class _PdfProtectionFeatureState extends State<PdfProtectionFeature> {
-  Future<void> _protectPdf() async {
+class _InfoFeatureState extends State<InfoFeature> {
+  Future<void> _checkValidity() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
     );
     if (result == null || result.files.single.path == null) return;
 
-    widget.onStatusChange('Protecting PDF (Password: 1234)...');
+    widget.onStatusChange('Analyzing PDF...');
     try {
-      final file = await PdfUtils.encryptPdf(
-        filePath: result.files.single.path!,
-        userPassword: '1234',
-        ownerPassword: '1234',
-      );
-      if (file != null) {
-        widget.onStatusChange('Protected PDF: ${file.path}');
-        await OpenFilex.open(file.path);
+      final validity = await PdfUtils.getValidity(result.files.single.path!);
+      if (validity != null) {
+        String msg = 'Is Valid: ${validity.isValid}\n'
+            'Open Protected: ${validity.isOpenPasswordProtected}\n'
+            'Printing Allowed: ${validity.isPrintingAllowed}\n'
+            'Modifying Allowed: ${validity.isModifyContentsAllowed}';
+        widget.onStatusChange(msg);
       }
     } catch (e) {
-      widget.onStatusChange('Error protecting PDF: $e');
+      widget.onStatusChange('Error checking validity: $e');
     }
   }
 
-  Future<void> _unlockPdf() async {
+  Future<void> _getPageSizes() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
     );
     if (result == null || result.files.single.path == null) return;
 
-    widget.onStatusChange('Unlocking PDF (Password: 1234)...');
+    widget.onStatusChange('Fetching page sizes...');
     try {
-      final file = await PdfUtils.decryptPdf(
-        result.files.single.path!,
-        password: '1234',
-      );
-      if (file != null) {
-        widget.onStatusChange('Unlocked PDF: ${file.path}');
-        await OpenFilex.open(file.path);
+      final sizes = await PdfUtils.getPagesSize(result.files.single.path!);
+      String msg = 'Found ${sizes.length} pages:';
+      for (var size in sizes.take(5)) {
+        msg += '\nPage ${size.pageNumber}: ${size.width.toInt()}x${size.height.toInt()}';
       }
+      if (sizes.length > 5) msg += '\n... and ${sizes.length - 5} more.';
+      widget.onStatusChange(msg);
     } catch (e) {
-      widget.onStatusChange('Error unlocking PDF: $e');
+      widget.onStatusChange('Error getting page sizes: $e');
     }
   }
 
@@ -62,19 +59,19 @@ class _PdfProtectionFeatureState extends State<PdfProtectionFeature> {
     return Column(
       children: [
         _buildFeatureCard(
-          title: 'Protect PDF (Lock)',
-          description: 'Add password "1234" to your PDF.',
-          icon: Icons.lock,
-          onPressed: _protectPdf,
-          color: Colors.red.shade50,
+          title: 'Check Validity & Security',
+          description: 'Analyze PDF structure and security settings.',
+          icon: Icons.security,
+          onPressed: _checkValidity,
+          color: Colors.indigo.shade50,
         ),
         const SizedBox(height: 12),
         _buildFeatureCard(
-          title: 'Remove Password (Unlock)',
-          description: 'Unlock PDF protected with "1234".',
-          icon: Icons.lock_open,
-          onPressed: _unlockPdf,
-          color: Colors.pink.shade50,
+          title: 'Get Page Sizes',
+          description: 'Retrieve dimensions of all pages in the PDF.',
+          icon: Icons.photo_size_select_actual,
+          onPressed: _getPageSizes,
+          color: Colors.teal.shade50,
         ),
       ],
     );
@@ -101,7 +98,7 @@ class _PdfProtectionFeatureState extends State<PdfProtectionFeature> {
           padding: const EdgeInsets.all(16.0),
           child: Row(
             children: [
-              Icon(icon, size: 40, color: Colors.red.shade700),
+              Icon(icon, size: 40, color: Colors.indigo.shade700),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(

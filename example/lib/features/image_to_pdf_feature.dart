@@ -20,12 +20,14 @@ class _ImageToPdfFeatureState extends State<ImageToPdfFeature> {
 
     widget.onStatusChange('Converting ${images.length} images to PDF (Native)...');
     try {
-      final file = await PdfUtils.nativeImagesToPdf(
-        imagePaths: images.map((e) => e.path).toList(),
-        outputFileName: 'converted_images_${DateTime.now().millisecondsSinceEpoch}',
+      final files = await PdfUtils.imagesToPdfs(
+        imagesPath: images.map((e) => e.path).toList(),
+        createSinglePdf: true,
       );
-      widget.onStatusChange('PDF created: ${file.path}');
-      await OpenFilex.open(file.path);
+      if (files.isNotEmpty) {
+        widget.onStatusChange('PDF created: ${files.first.path}');
+        await OpenFilex.open(files.first.path);
+      }
     } catch (e) {
       widget.onStatusChange('Error converting images: $e');
     }

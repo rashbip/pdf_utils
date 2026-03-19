@@ -17,13 +17,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
+import java.io.PrintWriter
+import java.io.FileOutputStream
 import kotlin.concurrent.thread
 
 /** PdfUtilsPlugin */
 class PdfUtilsPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private lateinit var channel: MethodChannel
-    private lateinit var pdfLocker: PdfLocker
-    private lateinit var pdfMerger: PdfMerger
     private var activity: Activity? = null
     private val mainHandler: Handler by lazy { Handler(Looper.getMainLooper()) }
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
@@ -31,8 +31,6 @@ class PdfUtilsPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "pdf_utils")
         channel.setMethodCallHandler(this)
-        pdfLocker = PdfLocker()
-        pdfMerger = PdfMerger()
         PDFBoxResourceLoader.init(flutterPluginBinding.applicationContext)
     }
 
@@ -168,107 +166,121 @@ class PdfUtilsPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     }
                 }
             }
-            "isEncrypted" -> {
+            "getValidityAndProtection" -> {
                 val filePath = call.argument<String>("filePath")
-                if (filePath == null) {
-                    result.error("INVALID_ARGUMENTS", "File path is null", null)
+                val password = call.argument<String>("password") ?: ""
+                if (filePath == null || activity == null) {
+                    result.error("INVALID_ARGUMENTS", "File path or activity null", null)
                     return
                 }
-                try {
-                    val isEncrypted = pdfLocker.isEncrypted(filePath)
-                    result.success(isEncrypted)
-                } catch (e: Exception) {
-                    result.error("IS_ENCRYPTED_FAILED", "Failed to check if PDF is encrypted", e.message)
+                coroutineScope.launch {
+                    try {
+                        val info = getPdfValidityAndProtection(filePath, password, activity!!)
+                        result.success(info)
+                    } catch (e: Exception) {
+                        result.error("CHECK_FAILED", "Failed to check PDF", e.message)
+                    }
                 }
             }
-            "lock" -> {
+            "encryptPdf" -> {
                 val filePath = call.argument<String>("filePath")
-                val userPassword = call.argument<String>("userPassword")
-                val ownerPassword = call.argument<String>("ownerPassword")
-                if (filePath == null || userPassword == null || ownerPassword == null) {
-                    result.error("INVALID_ARGUMENTS", "File path or password is null", null)
+                val ownerPassword = call.argument<String>("ownerPassword") ?: ""
+                val userPassword = call.argument<String>("userPassword") ?: ""
+                val permissions = call.argument<Map<String, Boolean>>("permissions") ?: mapOf()
+                
+                if (filePath == null || activity == null) {
+                    result.error("INVALID_ARGUMENTS", "File path or activity null", null)
                     return
                 }
-                try {
-                    pdfLocker.lock(filePath, userPassword, ownerPassword)
-                    result.success(true)
-                } catch (e: Exception) {
-                    result.error("LOCK_FAILED", "Failed to lock PDF", e.message)
+
+                coroutineScope.launch {
+                    try {
+                        val encryptedPath = getPdfEncrypted(
+                            filePath,
+                            ownerPassword,
+                            userPassword,
+                            permissions["allowPrinting"] ?: false,
+                            permissions["allowModifyContents"] ?: false,
+                            permissions["allowCopy"] ?: false,
+                            permissions["allowModifyAnnotations"] ?: false,
+                            permissions["allowFillIn"] ?: false,
+                            permissions["allowScreenReaders"] ?: false,
+                            permissions["allowAssembly"] ?: false,
+                            permissions["allowDegradedPrinting"] ?: false,
+                            permissions["aes40"] ?: false,
+                            permissions["aes128"] ?: true,
+                            permissions["encryptionAES128"] ?: false,
+                            permissions["encryptEmbeddedFilesOnly"] ?: false,
+                            permissions["doNotEncryptMetadata"] ?: false,
+                            activity!!
+                        )
+                        result.success(encryptedPath)
+                    } catch (e: Exception) {
+                        result.error("ENCRYPT_FAILED", "Failed to encrypt PDF", e.message)
+                    }
                 }
             }
-            "unlock" -> {
+            "decryptPdf" -> {
                 val filePath = call.argument<String>("filePath")
-                val password = call.argument<String>("password")
-                if (filePath == null || password == null) {
-                    result.error("INVALID_ARGUMENTS", "File path or password is null", null)
+                val password = call.argument<String>("password") ?: ""
+                if (filePath == null || activity == null) {
+                    result.error("INVALID_ARGUMENTS", "File path or activity null", null)
                     return
                 }
-                try {
-                    val isUnlocked = pdfLocker.unlock(filePath, password)
-                    result.success(isUnlocked)
-                } catch (e: Exception) {
-                    result.error("UNLOCK_FAILED", "Failed to unlock PDF", e.message)
+                coroutineScope.launch {
+                    try {
+                        val decryptedPath = getPdfDecrypted(filePath, password, activity!!)
+                        result.success(decryptedPath)
+                    } catch (e: Exception) {
+                        result.error("DECRYPT_FAILED", "Failed to decrypt PDF", e.message)
+                    }
                 }
             }
-            "mergePdfFiles" -> {
+            "getPagesSize" -> {
+                val filePath = call.argument<String>("filePath")
+                if (filePath == null || activity == null) {
+                    result.error("INVALID_ARGUMENTS", "File path or activity null", null)
+                    return
+                }
+                coroutineScope.launch {
+                    try {
+                        val sizes = getPDFPagesSize(filePath, activity!!)
+                        result.success(sizes)
+                    } catch (e: Exception) {
+                        result.error("GET_SIZE_FAILED", "Failed to get page sizes", e.message)
+                    }
+                }
+            }
+            "mergePdfs" -> {
                 val filesPath = call.argument<List<String>>("filesPath")
-                val outputPath = call.argument<String>("outputPath")
-                if (filesPath == null || outputPath == null) {
-                    result.error("INVALID_ARGUMENTS", "Files path or output path is null", null)
+                if (filesPath == null || activity == null) {
+                    result.error("INVALID_ARGUMENTS", "Files path or activity null", null)
                     return
                 }
-                executeInBackground(
-                    task = {
-                        pdfMerger.mergePdfFiles(filesPath, outputPath)
-                    },
-                    onSuccess = { mergedPath ->
+                coroutineScope.launch {
+                    try {
+                        val mergedPath = getMergedPDFPath(filesPath, activity!!)
                         result.success(mergedPath)
-                    },
-                    onError = { e ->
-                        result.error("MERGE_PDF_FILES_FAILED", "Failed to merge PDF files", e.message)
-                    },
-                )
-            }
-            "choosePagesIndexToMerge" -> {
-                val inputPath = call.argument<String>("inputPath")
-                val outputPath = call.argument<String>("outputPath")
-                val pagesIndex = call.argument<List<Int>>("pagesIndex")
-                if (inputPath == null || outputPath == null || pagesIndex == null) {
-                    result.error("INVALID_ARGUMENTS", "Input path, output path or pages is null", null)
-                    return
+                    } catch (e: Exception) {
+                        result.error("MERGE_FAILED", "Failed to merge PDFs", e.message)
+                    }
                 }
-                executeInBackground(
-                    task = {
-                        pdfMerger.choosePagesIndexToMerge(inputPath, outputPath, pagesIndex)
-                    },
-                    onSuccess = { mergedPath ->
-                        result.success(mergedPath)
-                    },
-                    onError = { e ->
-                        result.error("CHOOSE_PAGES_TO_MERGE_FAILED", "Failed to choose pages to merge", e.message)
-                    },
-                )
             }
-            "mergeImagesToPdf" -> {
+            "nativeImagesToPdf" -> {
                 val imagesPath = call.argument<List<String>>("imagesPath")
-                val outputPath = call.argument<String>("outputPath")
-                val configMap = call.argument<Map<String, Any?>>("config")
-                if (imagesPath == null || outputPath == null) {
-                    result.error("INVALID_ARGUMENTS", "Images path or output path is null", null)
+                val createSingle = call.argument<Boolean>("createSingle") ?: true
+                if (imagesPath == null || activity == null) {
+                    result.error("INVALID_ARGUMENTS", "Images path or activity null", null)
                     return
                 }
-                val config = parseImagesToPdfConfig(configMap)
-                executeInBackground(
-                    task = {
-                        pdfMerger.mergeImagesToPdf(imagesPath, outputPath, config)
-                    },
-                    onSuccess = { mergedPath ->
-                        result.success(mergedPath)
-                    },
-                    onError = { e ->
-                        result.error("MERGE_IMAGES_TO_PDF_FAILED", "Failed to merge images to PDF", e.message)
-                    },
-                )
+                coroutineScope.launch {
+                    try {
+                        val paths = getPdfsFromImages(imagesPath, createSingle, activity!!)
+                        result.success(paths)
+                    } catch (e: Exception) {
+                        result.error("CONVERT_FAILED", "Failed to convert images to PDF", e.message)
+                    }
+                }
             }
             "pdfToImages" -> {
                 val inputPath = call.argument<String>("inputPath")
@@ -424,18 +436,6 @@ class PdfUtilsPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 mainHandler.post { onError(e) }
             }
         }
-    }
-
-    private fun parseImagesToPdfConfig(configMap: Map<String, Any?>?): ImagesToPdfConfig? {
-        configMap ?: return null
-        val rescaleMap = configMap["rescale"] as? Map<*, *> ?: return null
-        val widthValue = (rescaleMap["maxWidth"] as? Number)?.toInt() ?: 0
-        val heightValue = (rescaleMap["maxHeight"] as? Number)?.toInt() ?: 0
-        val keepAspectRatio = configMap["keepAspectRatio"] as? Boolean != false
-        return ImagesToPdfConfig(
-            rescale = ImageScale(widthValue, heightValue),
-            keepAspectRatio = keepAspectRatio,
-        )
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {

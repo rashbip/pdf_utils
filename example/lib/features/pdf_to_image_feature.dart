@@ -28,7 +28,6 @@ class _PdfToImageFeatureState extends State<PdfToImageFeature> {
       final imagePaths = await PdfUtils.pdfToImages(
         pdfPath: pdfPath,
         outputDirectory: outputDir,
-        onProgress: (current, total) => widget.onProgress('Extracting: $current / $total'),
       );
       widget.onProgress('Extracted ${imagePaths.length} images to $outputDir', previews: imagePaths);
     } catch (e) {
@@ -45,11 +44,15 @@ class _PdfToImageFeatureState extends State<PdfToImageFeature> {
 
     widget.onProgress('Generating long image...', previews: []);
     try {
+      final appDir = await getTemporaryDirectory();
+      final outputPath = '${appDir.path}/long_image_${DateTime.now().millisecondsSinceEpoch}.jpg';
       final file = await PdfUtils.pdfToLongImage(
         pdfPath: result.files.single.path!,
-        outputFileName: 'long_image_${DateTime.now().millisecondsSinceEpoch}',
+        outputPath: outputPath,
       );
-      widget.onProgress('Long image created: ${file.path}', previews: [file.path]);
+      if (file != null) {
+        widget.onProgress('Long image created: ${file.path}', previews: [file.path]);
+      }
     } catch (e) {
       widget.onProgress('Error generating long image: $e');
     }

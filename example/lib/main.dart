@@ -10,6 +10,7 @@ import 'features/compression_feature.dart';
 import 'features/watermark_feature.dart';
 import 'features/split_feature.dart';
 import 'features/page_manipulation_feature.dart';
+import 'features/info_feature.dart';
 
 void main() {
   runApp(const MyApp());
@@ -104,6 +105,8 @@ class _MyHomePageState extends State<MyHomePage> {
               SplitFeature(onStatusChange: _onStatusChange),
               const SizedBox(height: 12),
               PageManipulationFeature(onStatusChange: _onStatusChange),
+              const SizedBox(height: 12),
+              InfoFeature(onStatusChange: _onStatusChange),
               
               const SizedBox(height: 30),
               if (_statusMessage != null)

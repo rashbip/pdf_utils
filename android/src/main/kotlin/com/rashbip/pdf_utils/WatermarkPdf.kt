@@ -20,15 +20,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 
-
-enum class WatermarkLayer {
-    UnderContent, OverContent
-}
-
-enum class PositionType {
-    TopLeft, TopCenter, TopRight, CenterLeft, Center, CenterRight, BottomLeft, BottomCenter, BottomRight, Custom
-}
-
 // For compressing pdf.
 suspend fun getWatermarkedPDFPath(
     sourceFilePath: String,

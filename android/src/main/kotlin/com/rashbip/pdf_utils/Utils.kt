@@ -8,6 +8,16 @@ import android.provider.OpenableColumns
 import io.flutter.plugin.common.MethodChannel
 import java.io.*
 
+data class PageRotationInfo(var pageNumber: Int, val rotationAngle: Int)
+
+enum class WatermarkLayer {
+    UnderContent, OverContent
+}
+
+enum class PositionType {
+    TopLeft, TopCenter, TopRight, CenterLeft, Center, CenterRight, BottomLeft, BottomCenter, BottomRight, Custom
+}
+
 class Utils {
 
     fun deleteTempFiles(listOfTempFiles: List<File>) {

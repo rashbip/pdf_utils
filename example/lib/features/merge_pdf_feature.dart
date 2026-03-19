@@ -23,12 +23,11 @@ class _MergePdfFeatureState extends State<MergePdfFeature> {
     final paths = result.files.map((e) => e.path!).toList();
     widget.onStatusChange('Merging ${paths.length} PDFs...');
     try {
-      final file = await PdfUtils.mergePdfFiles(
-        filesPath: paths,
-        outputFileName: 'merged_${DateTime.now().millisecondsSinceEpoch}',
-      );
-      widget.onStatusChange('Merged PDF created: ${file.path}');
-      await OpenFilex.open(file.path);
+      final file = await PdfUtils.mergePdfs(paths);
+      if (file != null) {
+        widget.onStatusChange('Merged PDF created: ${file.path}');
+        await OpenFilex.open(file.path);
+      }
     } catch (e) {
       widget.onStatusChange('Error merging PDFs: $e');
     }

@@ -1,4 +1,4 @@
-package com.deepanshuchaudhary.pdf_manipulator
+package com.rashbip.pdf_utils
 
 import android.app.Activity
 import android.content.ContentResolver

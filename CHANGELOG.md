@@ -1,3 +1,16 @@
+# 3.0.0
+
+* **Major Refactor: iText7 Integration**: Completely replaced underlying technology with the powerful iText7 engine for all major PDF operations (Android only).
+* **Breaking Change: New API Structure**: Streamlined the `PdfUtils` API with better model support (`PdfValidity`, `PdfPageSize`) and more consistent method naming.
+* **New Feature: PDF Security Analysis**: Retrieve comprehensive information about PDF validity and detailed security permissions via `PdfUtils.getValidity`.
+* **New Feature: Advanced Encryption**: Fine-tune security permissions including printing, copying, and modification flags via `PdfUtils.encryptPdf`.
+* **New Feature: Page Size Discovery**: Get architectural dimensions for every page in your PDF via `PdfUtils.getPagesSize`.
+* **New Feature: PDF Splitting (Advanced)**: New high-performance splitting methods for broken-up documents.
+* **Improved Page Manipulation**: Reorder, delete, and rotate pages in a single optimized pass via `PdfUtils.manipulatePages`.
+* **Native Image to PDF**: Native iText7 implementation for lightning-fast image conversion.
+* **Project Cleanup**: Removed redundant components for a smaller and more efficient plugin footprint.
+* **Documentation**: Split documentation into feature-specific files in the `doc` folder.
+
 # 2.2.0
 
 * **New Feature: PDF Compression**: Added capability to reduce PDF file size by optimizing images and removing fonts via `PdfUtils.compressPdf`.
