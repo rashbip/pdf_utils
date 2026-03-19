@@ -115,6 +115,12 @@ class PdfUtilsPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 }
                 executeInBackground(result) { getPDFPageRotatorDeleterReorder(filePath, reorder, delete, rotateList, activity) }
             }
+            "compressPdf" -> {
+                val filePath = call.argument<String>("filePath") ?: ""
+                val quality = call.argument<Int>("quality") ?: 80
+                val scale = call.argument<Double>("scale") ?: 1.0
+                executeInBackground(result) { getCompressedPDFPath(filePath, quality, scale, activity) }
+            }
             "watermarkPdf" -> {
                 val filePath = call.argument<String>("filePath") ?: ""
                 val text = call.argument<String>("text") ?: ""

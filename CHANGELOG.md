@@ -1,14 +1,14 @@
 # 3.0.0
 
-* **Major Refactor: iText7 Integration**: Completely replaced underlying technology with the powerful iText7 engine for all major PDF operations (Android only).
-* **Breaking Change: New API Structure**: Streamlined the `PdfUtils` API with better model support (`PdfValidity`, `PdfPageSize`) and more consistent method naming.
-* **New Feature: PDF Security Analysis**: Retrieve comprehensive information about PDF validity and detailed security permissions via `PdfUtils.getValidity`.
-* **New Feature: Advanced Encryption**: Fine-tune security permissions including printing, copying, and modification flags via `PdfUtils.encryptPdf`.
-* **New Feature: Page Size Discovery**: Get architectural dimensions for every page in your PDF via `PdfUtils.getPagesSize`.
-* **New Feature: PDF Splitting (Advanced)**: New high-performance splitting methods for broken-up documents.
-* **Improved Page Manipulation**: Reorder, delete, and rotate pages in a single optimized pass via `PdfUtils.manipulatePages`.
-* **Native Image to PDF**: Native iText7 implementation for lightning-fast image conversion.
-* **Project Cleanup**: Removed redundant components for a smaller and more efficient plugin footprint.
+* **Major Refactor: PDFBox Integration**: Tried Replacing ENgine with iText7 but it was working as expected, but the issue is license. It doesn't provide free license for commercial use, so Migrated the core engine back to PDFBox (Apache 2.0 license) for full legal compliance and maximum efficiency . And exploring iText7 helped me to add many more fature out of pdfbox. I'm just trying to add features that are not offered by pdfbox directly. 
+* **Breaking Change: Enhanced API Structure**: Unified and streamlined the `PdfUtils` API with cleaner models (`PdfValidity`, `PdfPageSize`) and more consistent method naming across Dart and Native.
+* **New Feature: Smart PDF Compression**: Significantly reduce PDF file size by removing structural bloat and optimizing images natively via PDFBox.
+* **New Feature: Native PDF Watermarking**: Professional text watermarking with customizable transparency, rotation, and colors.
+* **New Feature: PDF Security Analysis**: Retrieve detailed security permissions and validity via `getValidity`.
+* **New Feature: Detailed Page Metrics**: Discover architectural dimensions (width/height) for every page via `getPagesSize`.
+* **Optimized Page Manipulation**: Reorder, delete, and rotate pages in a single high-speed native pass via `manipulatePages`.
+* **Improved Performance**: Lightning-fast native image-to-PDF and merging implementations using optimized PDFBox-android APIs.
+* **Project Structure**: Cleaned up the Android source into modular helper classes for better maintainability and professional codebase.
 * **Documentation**: Split documentation into feature-specific files in the `doc` folder.
 
 # 2.2.0
