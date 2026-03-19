@@ -1,107 +1,25 @@
 package com.rashbip.pdf_utils
 
 import android.app.Activity
-import android.content.ContentResolver
-import android.util.Log
-import com.itextpdf.kernel.crypto.BadPasswordException
-import com.itextpdf.kernel.PdfException
-import com.itextpdf.kernel.pdf.PdfDocument
-import com.itextpdf.kernel.pdf.PdfEncryptor
-import com.itextpdf.kernel.pdf.PdfReader
-import com.itextpdf.kernel.pdf.ReaderProperties
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.InputStream
+import com.tom_roush.pdfbox.pdmodel.PDDocument
+import kotlinx.coroutines.*
+import java.io.File
 
-private const val LOG_TAG = "PdfValidity"
-
-// For checking pdf validity and encryption.
-suspend fun getPdfValidityAndProtection(
-    sourceFilePath: String,
-    userOrOwnerPassword: String,
-    context: Activity,
-): List<Boolean?> {
-
-    var isPDFValid = true
-    var isOwnerPasswordProtected: Boolean? =
-        null // Also means that this pdf is owner password protected.
-    var isOpenPasswordProtected = false // Means that this pdf is user password protected.
-    var isPrintingAllowed: Boolean? = null
-    var isModifyContentsAllowed: Boolean? = null
-
-    withContext(Dispatchers.IO) {
-
-        val utils = Utils()
-
-        val begin = System.nanoTime()
-
-        val contentResolver: ContentResolver = context.contentResolver
-
-        val uri = utils.getURI(sourceFilePath)
-
-        val sourceFileInputStream: InputStream? = contentResolver.openInputStream(uri)
-
-//        val pdfReaderFile: File =
-//            File.createTempFile("readerTempFile", ".pdf")
-//        utils.copyDataFromSourceToDestDocument(
-//            sourceFileUri = uri,
-//            destinationFileUri = pdfReaderFile.toUri(),
-//            contentResolver = contentResolver
-//        )
-        val pdfReader: PdfReader
-        val pdfDocument: PdfDocument
-
+suspend fun getPdfValidityAndProtection(path: String, password: String, context: Activity): List<Boolean?> {
+    return withContext(Dispatchers.IO) {
         try {
-            pdfReader = if (userOrOwnerPassword.trim().isEmpty()) {
-                PdfReader(
-                    sourceFileInputStream, ReaderProperties()
-                ).setMemorySavingMode(true).setUnethicalReading(true)
-            } else {
-                PdfReader(
-                    sourceFileInputStream,
-                    ReaderProperties().setPassword(userOrOwnerPassword.toByteArray())
-                ).setMemorySavingMode(true).setUnethicalReading(true)
+            PDDocument.load(File(path), password).use { doc ->
+                val ap = doc.currentAccessPermission
+                listOf(
+                    true, // isValid
+                    doc.isEncrypted,
+                    doc.isEncrypted,
+                    ap?.canPrint() ?: true,
+                    ap?.canModify() ?: true
+                )
             }
-
-            pdfDocument = PdfDocument(pdfReader)
-            isOwnerPasswordProtected = pdfReader.isEncrypted
-            val perm = pdfReader.permissions.toInt()
-            if (perm != 0) {
-                isPrintingAllowed = PdfEncryptor.isPrintingAllowed(perm)
-                isModifyContentsAllowed = PdfEncryptor.isModifyContentsAllowed(perm)
-            } else {
-                isPrintingAllowed = true
-                isModifyContentsAllowed = true
-            }
-            pdfDocument.close()
-            pdfReader.close()
-        } catch (e: BadPasswordException) {
-            isOpenPasswordProtected = true
-            Log.d(
-                LOG_TAG,
-                e.stackTraceToString(),
-            )
-            sourceFileInputStream?.close()
-        } catch (e: PdfException) {
-            isPDFValid = false
-            Log.d(
-                LOG_TAG,
-                e.stackTraceToString(),
-            )
-            sourceFileInputStream?.close()
-        } finally {
-            sourceFileInputStream?.close()
+        } catch (e: Exception) {
+            listOf(false, null, null, null, null)
         }
-
-        val end = System.nanoTime()
-        println("Elapsed time in nanoseconds: ${end - begin}")
     }
-
-    return listOf(
-        isPDFValid,
-        isOwnerPasswordProtected,
-        isOpenPasswordProtected,
-        isPrintingAllowed,
-        isModifyContentsAllowed
-    )
 }

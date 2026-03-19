@@ -1,75 +1,17 @@
 package com.rashbip.pdf_utils
 
 import android.app.Activity
-import android.content.ContentResolver
-import com.itextpdf.kernel.pdf.PdfDocument
-import com.itextpdf.kernel.pdf.PdfReader
-import com.itextpdf.kernel.pdf.PdfWriter
-import com.itextpdf.kernel.pdf.ReaderProperties
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import com.tom_roush.pdfbox.pdmodel.PDDocument
+import kotlinx.coroutines.*
 import java.io.File
-import java.io.InputStream
 
-// For decrypting pdf.
-suspend fun getPdfDecrypted(
-    sourceFilePath: String,
-    userOrOwnerPassword: String,
-    context: Activity,
-): String? {
-
-    var result: String? = null
-
-    withContext(Dispatchers.IO) {
-
-        val utils = Utils()
-
-        val begin = System.nanoTime()
-
-        val contentResolver: ContentResolver = context.contentResolver
-
-        val uri = utils.getURI(sourceFilePath)
-
-        val sourceFileInputStream: InputStream? = contentResolver.openInputStream(uri)
-
-//        val pdfReaderFile: File =
-//            File.createTempFile("readerTempFile", ".pdf")
-//        utils.copyDataFromSourceToDestDocument(
-//            sourceFileUri = uri,
-//            destinationFileUri = pdfReaderFile.toUri(),
-//            contentResolver = contentResolver
-//        )
-        val pdfReader: PdfReader
-        val pdfDocument: PdfDocument
-
-        val pdfWriterFile: File = File.createTempFile("writerTempFile", ".pdf")
-
-        val pdfWriter = PdfWriter(pdfWriterFile)
-
-        pdfWriter.setSmartMode(true)
-        pdfWriter.compressionLevel = 9
-
-        try {
-            pdfReader = PdfReader(
-                sourceFileInputStream,
-                ReaderProperties().setPassword(userOrOwnerPassword.toByteArray())
-            ).setMemorySavingMode(true).setUnethicalReading(true)
-            pdfDocument = PdfDocument(pdfReader, pdfWriter)
-
-            result = pdfWriterFile.path
-
-            pdfDocument.close()
-            pdfReader.close()
-            pdfWriter.close()
-        } finally {
-
-            pdfWriter.close()
-            sourceFileInputStream?.close()
+suspend fun getPdfDecrypted(path: String, password: String, context: Activity): String? {
+    return withContext(Dispatchers.IO) {
+        PDDocument.load(File(path), password).use { doc ->
+            doc.isAllSecurityToBeRemoved = true
+            val out = File.createTempFile("decrypted_", ".pdf")
+            doc.save(out)
+            out.absolutePath
         }
-
-        val end = System.nanoTime()
-        println("Elapsed time in nanoseconds: ${end - begin}")
     }
-
-    return result
 }

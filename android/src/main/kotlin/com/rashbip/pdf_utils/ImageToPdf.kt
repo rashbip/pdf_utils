@@ -1,103 +1,59 @@
 package com.rashbip.pdf_utils
 
 import android.app.Activity
-import android.content.ContentResolver
-import androidx.core.net.toUri
-import com.itextpdf.io.image.ImageDataFactory
-import com.itextpdf.kernel.geom.PageSize
-import com.itextpdf.kernel.pdf.PdfDocument
-import com.itextpdf.kernel.pdf.PdfWriter
-import com.itextpdf.layout.Document
-import com.itextpdf.layout.element.Image
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.yield
+import android.graphics.BitmapFactory
+import com.tom_roush.pdfbox.pdmodel.PDDocument
+import com.tom_roush.pdfbox.pdmodel.PDPage
+import com.tom_roush.pdfbox.pdmodel.PDPageContentStream
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle
+import com.tom_roush.pdfbox.pdmodel.graphics.image.JPEGFactory
+import com.tom_roush.pdfbox.pdmodel.graphics.image.LosslessFactory
+import kotlinx.coroutines.*
 import java.io.File
+import java.io.FileInputStream
 
-// For converting images to pdf.
 suspend fun getPdfsFromImages(
-    sourceImagesPaths: List<String>,
-    createSinglePdf: Boolean,
-    context: Activity,
+    images: List<String>,
+    single: Boolean,
+    context: Activity
 ): List<String> {
-
-    val result = mutableListOf<String>()
-    val utils = Utils()
-    val imagesTempFiles = mutableListOf<File>()
-
-    withContext(Dispatchers.IO) {
-
-        val begin = System.nanoTime()
-
-        val contentResolver: ContentResolver = context.contentResolver
-
-        for (i in sourceImagesPaths.indices) {
-            val imagePathOrUri = sourceImagesPaths[i]
-            val sourceFileUri = utils.getURI(imagePathOrUri)
-            val tempFileName = utils.getFileNameFromPickedDocumentUri(sourceFileUri, context)
-            val tempFileExtension = tempFileName!!.substringAfterLast('.', "")
-            val tempFile: File = File.createTempFile(tempFileName, ".$tempFileExtension")
-            utils.copyDataFromSourceToDestDocument(
-                sourceFileUri = sourceFileUri,
-                destinationFileUri = tempFile.toUri(),
-                contentResolver = contentResolver
-            )
-            imagesTempFiles.add(tempFile)
-        }
-
-        println(imagesTempFiles.map { it.path }.toList())
-
-        if (createSinglePdf) {
-
-            val pdfWriterFile: File = File.createTempFile("writerTempFile", ".pdf")
-            val pdfWriter = PdfWriter(pdfWriterFile)
-            pdfWriter.setSmartMode(true)
-            pdfWriter.compressionLevel = 9
-            var image = Image(ImageDataFactory.create(imagesTempFiles[0].path))
-            val pdfDocument = PdfDocument(pdfWriter)
-            val doc = Document(pdfDocument, PageSize(image.imageWidth, image.imageHeight))
-            for (i in imagesTempFiles.indices) {
-                yield()
-                image = Image(ImageDataFactory.create(imagesTempFiles[i].path))
-                pdfDocument.addNewPage(PageSize(image.imageWidth, image.imageHeight))
-                image.setFixedPosition(i + 1, 0f, 0f)
-                doc.add(image)
-                pdfWriter.flush()
+    return withContext(Dispatchers.IO) {
+        if (single) {
+            val doc = PDDocument()
+            images.forEach { path ->
+                val imageFile = File(path)
+                val pdImage = if (path.lowercase().endsWith(".jpg") || path.lowercase().endsWith(".jpeg")) {
+                    JPEGFactory.createFromStream(doc, FileInputStream(imageFile))
+                } else {
+                    val bitmap = BitmapFactory.decodeFile(path)
+                    LosslessFactory.createFromImage(doc, bitmap)
+                }
+                val page = PDPage(PDRectangle(pdImage.width.toFloat(), pdImage.height.toFloat()))
+                doc.addPage(page)
+                PDPageContentStream(doc, page).use { cs -> cs.drawImage(pdImage, 0f, 0f) }
             }
+            val out = File.createTempFile("converted_", ".pdf")
+            doc.save(out)
             doc.close()
-            pdfDocument.close()
-            pdfWriter.close()
-
-            result.add(pdfWriterFile.path)
-
+            listOf(out.absolutePath)
         } else {
-            for (i in imagesTempFiles.indices) {
-                yield()
-                val pdfWriterFile: File = File.createTempFile("writerTempFile", ".pdf")
-                val pdfWriter = PdfWriter(pdfWriterFile)
-                pdfWriter.setSmartMode(true)
-                pdfWriter.compressionLevel = 9
-                var image = Image(ImageDataFactory.create(imagesTempFiles[i].path))
-                val pdfDocument = PdfDocument(pdfWriter)
-                val doc = Document(pdfDocument, PageSize(image.imageWidth, image.imageHeight))
-                image = Image(ImageDataFactory.create(imagesTempFiles[i].path))
-                pdfDocument.addNewPage(PageSize(image.imageWidth, image.imageHeight))
-                image.setFixedPosition(1, 0f, 0f)
-                doc.add(image)
-                pdfWriter.flush()
+            images.map { path ->
+                val doc = PDDocument()
+                val imageFile = File(path)
+                val pdImage = if (path.lowercase().endsWith(".jpg") || path.lowercase().endsWith(".jpeg")) {
+                    JPEGFactory.createFromStream(doc, FileInputStream(imageFile))
+                } else {
+                    val bitmap = BitmapFactory.decodeFile(path)
+                    LosslessFactory.createFromImage(doc, bitmap)
+                }
+                val page = PDPage(PDRectangle(pdImage.width.toFloat(), pdImage.height.toFloat()))
+                doc.addPage(page)
+                PDPageContentStream(doc, page).use { cs -> cs.drawImage(pdImage, 0f, 0f) }
+                val out = File.createTempFile("converted_", ".pdf")
+                doc.save(out)
                 doc.close()
-                pdfDocument.close()
-                pdfWriter.close()
-
-                result.add(pdfWriterFile.path)
+                out.absolutePath
             }
         }
-
-        val end = System.nanoTime()
-        println("Elapsed time in nanoseconds: ${end - begin}")
     }
-
-    utils.deleteTempFiles(listOfTempFiles = imagesTempFiles)
-
-    return result
 }
