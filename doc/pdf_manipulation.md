@@ -97,3 +97,59 @@ final selectedPages = await PdfUtils.choosePagesIndexToMerge(
   outputFileName: 'extracted_pages',
 );
 ```
+
+## PDF Compression
+Reduce PDF file size by optimizing images and removing embedded fonts.
+
+```dart
+final compressed = await PdfUtils.compressPdf(
+  filePath: '/path/to/my_doc.pdf',
+  quality: 50, // Image quality (0-100)
+  scale: 0.7, // Image scaling factor (0.0-1.0)
+  unEmbedFonts: true, // Remove embedded fonts to save space
+);
+```
+
+## PDF Watermarking
+Add professional text watermarks to your documents.
+
+```dart
+final watermarked = await PdfUtils.watermarkPdf(
+  filePath: '/path/to/my_doc.pdf',
+  text: 'CONFIDENTIAL',
+  fontSize: 60.0,
+  opacity: 0.2, // Watermark opacity (0.0-1.0)
+  rotation: 45.0, // Rotation angle in degrees
+  color: '#FF0000', // Hex color string
+  position: 'Center', // Position: Center, TopLeft, etc.
+);
+```
+
+## PDF Splitting
+Divide a PDF into multiple documents by page count or specific page numbers.
+
+```dart
+// Split every 2 pages
+final files = await PdfUtils.splitPdfByPageCount(
+  filePath: '/path/to/my_doc.pdf',
+  pageCount: 2,
+);
+
+// Split at specific page numbers
+final filesAtIndices = await PdfUtils.splitPdfByPageNumbers(
+  filePath: '/path/to/my_doc.pdf',
+  pageNumbers: [5, 10], // Split after page 5 and page 10
+);
+```
+
+## Page Manipulation
+Reorder, delete, or rotate specific pages within a PDF.
+
+```dart
+final modified = await PdfUtils.manipulatePages(
+  filePath: '/path/to/my_doc.pdf',
+  reorder: [3, 1, 2], // New order of pages (1-indexed)
+  delete: [4], // Remove page 4
+  rotate: {1: 90, 2: 180}, // Rotate page 1 by 90 deg and page 2 by 180 deg
+);
+```

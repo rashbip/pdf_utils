@@ -248,6 +248,107 @@ class PdfUtils {
     return File(resultPath ?? outputFile.path);
   }
 
+  /// Compresses a PDF file by reducing image quality and scaling.
+  /// 
+  /// [quality] is the image quality (0-100).
+  /// [scale] is the image scale factor (0.0-1.0).
+  /// [unEmbedFonts] if true, removes embedded fonts to save space.
+  static Future<File?> compressPdf({
+    required String filePath,
+    int quality = 80,
+    double scale = 1.0,
+    bool unEmbedFonts = false,
+  }) async {
+    final String? resultPath = await _channel.invokeMethod('compressPdf', {
+      'filePath': filePath,
+      'quality': quality,
+      'scale': scale,
+      'unEmbedFonts': unEmbedFonts,
+    });
+    return resultPath != null ? File(resultPath) : null;
+  }
+
+  /// Adds a text watermark to a PDF file.
+  /// 
+  /// [text] is the watermark content.
+  /// [fontSize] is the size of the watermark text.
+  /// [layer] can be 'OverContent' or 'UnderContent'.
+  /// [opacity] is the watermark opacity (0.0-1.0).
+  /// [rotation] is the rotation angle in degrees.
+  /// [color] is the hex color string (e.g. '#FF0000').
+  /// [position] can be 'Center', 'TopLeft', etc.
+  static Future<File?> watermarkPdf({
+    required String filePath,
+    required String text,
+    double fontSize = 40.0,
+    String layer = 'OverContent',
+    double opacity = 0.3,
+    double rotation = 45.0,
+    String color = '#000000',
+    String position = 'Center',
+  }) async {
+    final String? resultPath = await _channel.invokeMethod('watermarkPdf', {
+      'filePath': filePath,
+      'text': text,
+      'fontSize': fontSize,
+      'layer': layer,
+      'opacity': opacity,
+      'rotation': rotation,
+      'color': color,
+      'position': position,
+    });
+    return resultPath != null ? File(resultPath) : null;
+  }
+
+  /// Splits a PDF into multiple files, each having at most [pageCount] pages.
+  static Future<List<File>> splitPdfByPageCount({
+    required String filePath,
+    int pageCount = 1,
+  }) async {
+    final List<dynamic>? resultPaths = await _channel.invokeMethod('splitPdfByPageCount', {
+      'filePath': filePath,
+      'pageCount': pageCount,
+    });
+    return resultPaths?.map((path) => File(path as String)).toList() ?? [];
+  }
+
+  /// Splits a PDF at the specified [pageNumbers].
+  static Future<List<File>> splitPdfByPageNumbers({
+    required String filePath,
+    required List<int> pageNumbers,
+  }) async {
+    final List<dynamic>? resultPaths = await _channel.invokeMethod('splitPdfByPageNumbers', {
+      'filePath': filePath,
+      'pageNumbers': pageNumbers,
+    });
+    return resultPaths?.map((path) => File(path as String)).toList() ?? [];
+  }
+
+  /// Manipulates pages of a PDF: reorder, delete, or rotate.
+  /// 
+  /// [reorder] is the new sequence of page indices (1-indexed).
+  /// [delete] is the list of page indices to remove (1-indexed).
+  /// [rotate] is a map of page index to rotation angle (e.g., {1: 90}).
+  static Future<File?> manipulatePages({
+    required String filePath,
+    List<int> reorder = const [],
+    List<int> delete = const [],
+    Map<int, int> rotate = const {},
+  }) async {
+    final List<Map<String, int>> rotateList = rotate.entries.map((e) => {
+      'pageNumber': e.key,
+      'rotationAngle': e.value,
+    }).toList();
+
+    final String? resultPath = await _channel.invokeMethod('handlePageManipulation', {
+      'filePath': filePath,
+      'reorder': reorder,
+      'delete': delete,
+      'rotate': rotateList,
+    });
+    return resultPath != null ? File(resultPath) : null;
+  }
+
   /// Extracts the full text from a PDF.
   static Future<String> getFullText(String pdfPath, {String password = ""}) async {
     final doc = await PDFDoc.fromPath(pdfPath, password: password);

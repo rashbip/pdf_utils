@@ -1,3 +1,11 @@
+# 2.2.0
+
+* **New Feature: PDF Compression**: Added capability to reduce PDF file size by optimizing images and removing fonts via `PdfUtils.compressPdf`.
+* **New Feature: PDF Watermarking**: Added professional text watermarking support with customizable rotation, opacity, and positioning via `PdfUtils.watermarkPdf`.
+* **New Feature: PDF Splitting**: Divide PDFs by page count or specific page numbers via `PdfUtils.splitPdfByPageCount` and `PdfUtils.splitPdfByPageNumbers`.
+* **New Feature: Page Manipulation**: Reorder, delete, and rotate specific pages via `PdfUtils.manipulatePages`.
+* **Native Enhancements**: Integrated iText7 for advanced PDF operations on Android.
+
 # 2.1.0
 
 * **Improved Example App**: Refactored to feature-based structure for better readability.

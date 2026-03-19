@@ -6,6 +6,10 @@ import 'features/pdf_to_image_feature.dart';
 import 'features/merge_pdf_feature.dart';
 import 'features/pdf_protection_feature.dart';
 import 'features/text_extraction_feature.dart';
+import 'features/compression_feature.dart';
+import 'features/watermark_feature.dart';
+import 'features/split_feature.dart';
+import 'features/page_manipulation_feature.dart';
 
 void main() {
   runApp(const MyApp());
@@ -92,6 +96,14 @@ class _MyHomePageState extends State<MyHomePage> {
               const SizedBox(height: 12),
 
               TextExtractionFeature(onStatusChange: _onStatusChange),
+              const SizedBox(height: 12),
+              CompressionFeature(onStatusChange: _onStatusChange),
+              const SizedBox(height: 12),
+              WatermarkFeature(onStatusChange: _onStatusChange),
+              const SizedBox(height: 12),
+              SplitFeature(onStatusChange: _onStatusChange),
+              const SizedBox(height: 12),
+              PageManipulationFeature(onStatusChange: _onStatusChange),
               
               const SizedBox(height: 30),
               if (_statusMessage != null)

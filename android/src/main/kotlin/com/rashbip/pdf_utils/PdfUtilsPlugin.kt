@@ -1,24 +1,32 @@
 package com.rashbip.pdf_utils
 
+import android.app.Activity
 import android.os.Handler
 import android.os.Looper
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import kotlin.concurrent.thread
 
 /** PdfUtilsPlugin */
-class PdfUtilsPlugin : FlutterPlugin, MethodCallHandler {
+class PdfUtilsPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private lateinit var channel: MethodChannel
     private lateinit var pdfLocker: PdfLocker
     private lateinit var pdfMerger: PdfMerger
+    private var activity: Activity? = null
     private val mainHandler: Handler by lazy { Handler(Looper.getMainLooper()) }
+    private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "pdf_utils")
@@ -32,6 +40,133 @@ class PdfUtilsPlugin : FlutterPlugin, MethodCallHandler {
         when (call.method) {
             "getPlatformVersion" -> {
                 result.success("Android ${android.os.Build.VERSION.RELEASE}")
+            }
+            "compressPdf" -> {
+                val filePath = call.argument<String>("filePath")
+                val quality = call.argument<Int>("quality") ?: 80
+                val scale = call.argument<Double>("scale") ?: 1.0
+                val unEmbedFonts = call.argument<Boolean>("unEmbedFonts") ?: false
+                
+                if (filePath == null || activity == null) {
+                    result.error("INVALID_ARGUMENTS", "File path is null or activity is not available", null)
+                    return
+                }
+
+                coroutineScope.launch {
+                    try {
+                        val compressedPath = getCompressedPDFPath(
+                            sourceFilePath = filePath,
+                            imageQuality = quality,
+                            imageScale = scale,
+                            unEmbedFonts = unEmbedFonts,
+                            context = activity!!
+                        )
+                        result.success(compressedPath)
+                    } catch (e: Exception) {
+                        result.error("COMPRESS_FAILED", "Failed to compress PDF", e.message)
+                    }
+                }
+            }
+            "watermarkPdf" -> {
+                val filePath = call.argument<String>("filePath")
+                val text = call.argument<String>("text") ?: ""
+                val fontSize = call.argument<Double>("fontSize") ?: 20.0
+                val layerStr = call.argument<String>("layer") ?: "OverContent"
+                val opacity = call.argument<Double>("opacity") ?: 0.5
+                val rotation = call.argument<Double>("rotation") ?: 45.0
+                val color = call.argument<String>("color") ?: "#000000"
+                val positionStr = call.argument<String>("position") ?: "Center"
+                
+                if (filePath == null || activity == null) {
+                    result.error("INVALID_ARGUMENTS", "File path is null or activity is not available", null)
+                    return
+                }
+
+                val layer = if (layerStr == "UnderContent") WatermarkLayer.UnderContent else WatermarkLayer.OverContent
+                val position = try {
+                    PositionType.valueOf(positionStr)
+                } catch (e: Exception) {
+                    PositionType.Center
+                }
+
+                coroutineScope.launch {
+                    try {
+                        val watermarkedPath = getWatermarkedPDFPath(
+                            sourceFilePath = filePath,
+                            text = text,
+                            fontSize = fontSize,
+                            watermarkLayer = layer,
+                            opacity = opacity,
+                            rotationAngle = rotation,
+                            watermarkColor = color,
+                            positionType = position,
+                            customPositionXCoordinatesList = emptyList(),
+                            customPositionYCoordinatesList = emptyList(),
+                            context = activity!!
+                        )
+                        result.success(watermarkedPath)
+                    } catch (e: Exception) {
+                        result.error("WATERMARK_FAILED", "Failed to watermark PDF", e.message)
+                    }
+                }
+            }
+            "splitPdfByPageCount" -> {
+                val filePath = call.argument<String>("filePath")
+                val pageCount = call.argument<Int>("pageCount") ?: 1
+                if (filePath == null || activity == null) {
+                    result.error("INVALID_ARGUMENTS", "File path or activity null", null)
+                    return
+                }
+                coroutineScope.launch {
+                    try {
+                        val paths = getSplitPDFPathsByPageCount(filePath, pageCount, activity!!)
+                        result.success(paths)
+                    } catch (e: Exception) {
+                        result.error("SPLIT_FAILED", "Failed to split PDF", e.message)
+                    }
+                }
+            }
+            "splitPdfByPageNumbers" -> {
+                val filePath = call.argument<String>("filePath")
+                val pageNumbers = call.argument<List<Int>>("pageNumbers") ?: listOf()
+                if (filePath == null || activity == null) {
+                    result.error("INVALID_ARGUMENTS", "File path or activity null", null)
+                    return
+                }
+                coroutineScope.launch {
+                    try {
+                        val paths = getSplitPDFPathsByPageNumbers(filePath, pageNumbers, activity!!)
+                        result.success(paths)
+                    } catch (e: Exception) {
+                        result.error("SPLIT_FAILED", "Failed to split PDF", e.message)
+                    }
+                }
+            }
+            "handlePageManipulation" -> {
+                val filePath = call.argument<String>("filePath")
+                val reorder = call.argument<List<Int>>("reorder") ?: listOf()
+                val delete = call.argument<List<Int>>("delete") ?: listOf()
+                val rotateMap = call.argument<List<Map<String, Int>>>("rotate") ?: listOf()
+                
+                if (filePath == null || activity == null) {
+                    result.error("INVALID_ARGUMENTS", "File path or activity null", null)
+                    return
+                }
+
+                val rotationInfo = rotateMap.map { 
+                    PageRotationInfo(it["pageNumber"] ?: 1, it["rotationAngle"] ?: 0)
+                }
+
+                coroutineScope.launch {
+                    try {
+                        val newPath = getPDFPageRotatorDeleterReorder(
+                            filePath, reorder, delete, rotationInfo, activity!!
+                        )
+                        result.success(newPath)
+                    } catch (e: Exception) {
+                        result.error("MANIPULATION_FAILED", "Failed to manipulate PDF pages", e.message)
+                    }
+                }
             }
             "isEncrypted" -> {
                 val filePath = call.argument<String>("filePath")
@@ -305,5 +440,21 @@ class PdfUtilsPlugin : FlutterPlugin, MethodCallHandler {
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
+    }
+
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        activity = binding.activity
+    }
+
+    override fun onDetachedFromActivityForConfigChanges() {
+        activity = null
+    }
+
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        activity = binding.activity
+    }
+
+    override fun onDetachedFromActivity() {
+        activity = null
     }
 }
