@@ -25,6 +25,7 @@ class _TextExtractionFeatureState extends State<TextExtractionFeature> {
       final info = doc.info;
 
       showDialog(
+        // ignore: use_build_context_synchronously
         context: context,
         builder: (context) => AlertDialog(
           title: Text(info.title ?? 'PDF Info'),

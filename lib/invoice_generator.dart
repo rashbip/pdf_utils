@@ -155,6 +155,7 @@ class PdfInvoiceGenerator {
       ];
     }).toList();
 
+    // ignore: deprecated_member_use
     return pw.Table.fromTextArray(
       headers: headers,
       data: data,
