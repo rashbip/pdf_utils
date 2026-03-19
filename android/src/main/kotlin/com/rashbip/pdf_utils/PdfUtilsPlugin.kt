@@ -3,9 +3,10 @@ package com.rashbip.pdf_utils
 import android.app.Activity
 import android.os.Handler
 import android.os.Looper
-import com.tom_roush.pdfbox.pdmodel.PDDocument
-import com.tom_roush.pdfbox.text.PDFTextStripper
-import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
+import com.itextpdf.kernel.pdf.PdfDocument
+import com.itextpdf.kernel.pdf.PdfReader
+import com.itextpdf.kernel.pdf.canvas.parser.PdfTextExtractor
+import com.itextpdf.kernel.pdf.canvas.parser.listener.LocationTextExtractionStrategy
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -31,7 +32,6 @@ class PdfUtilsPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "pdf_utils")
         channel.setMethodCallHandler(this)
-        PDFBoxResourceLoader.init(flutterPluginBinding.applicationContext)
     }
 
     override fun onMethodCall(call: MethodCall, result: Result) {
@@ -379,18 +379,20 @@ class PdfUtilsPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
     private fun getDocInfo(path: String, password: String): Map<String, Any> {
         val file = File(path)
-        PDDocument.load(file, password).use { doc ->
+        val reader = PdfReader(file).setUnethicalReading(true)
+        if (password.isNotEmpty()) {
+            reader.setUnethicalReading(true)
+        }
+        PdfDocument(reader).use { doc ->
             val length = doc.numberOfPages
-            val info = doc.documentInformation
-            val creationDate = info.creationDate?.time?.toString()
-            val modificationDate = info.modificationDate?.time?.toString()
+            val info = doc.documentInfo
             
             return hashMapOf(
                 "length" to length,
                 "info" to hashMapOf(
                     "author" to (info.author ?: ""),
-                    "creationDate" to (creationDate ?: ""),
-                    "modificationDate" to (modificationDate ?: ""),
+                    "creationDate" to (info.moreInfo["CreationDate"] ?: ""),
+                    "modificationDate" to (info.moreInfo["ModDate"] ?: ""),
                     "creator" to (info.creator ?: ""),
                     "producer" to (info.producer ?: ""),
                     "keywords" to (info.keywords?.split(",")?.map { it.trim() } ?: listOf<String>()),
@@ -402,25 +404,30 @@ class PdfUtilsPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     }
 
     private fun extractPageText(path: String, pageNumber: Int, password: String): String {
-        PDDocument.load(File(path), password).use { doc ->
-            val stripper = PDFTextStripper()
-            stripper.startPage = pageNumber
-            stripper.endPage = pageNumber
-            return stripper.getText(doc)
+        val file = File(path)
+        val reader = PdfReader(file).setUnethicalReading(true)
+        PdfDocument(reader).use { doc ->
+            if (pageNumber > 0 && pageNumber <= doc.numberOfPages) {
+                val page = doc.getPage(pageNumber)
+                return PdfTextExtractor.getTextFromPage(page, LocationTextExtractionStrategy())
+            }
+            return ""
         }
     }
 
     private fun extractFullText(path: String, missingPagesNumbers: List<Int>, password: String): List<String> {
-        PDDocument.load(File(path), password).use { doc ->
-            val missingPagesTexts = arrayListOf<String>()
-            val stripper = PDFTextStripper()
-            missingPagesNumbers.forEach {
-                stripper.startPage = it
-                stripper.endPage = it
-                missingPagesTexts.add(stripper.getText(doc))
+        val file = File(path)
+        val reader = PdfReader(file).setUnethicalReading(true)
+        val results = mutableListOf<String>()
+        PdfDocument(reader).use { doc ->
+            missingPagesNumbers.forEach { pageNum ->
+                if (pageNum > 0 && pageNum <= doc.numberOfPages) {
+                    val page = doc.getPage(pageNum)
+                    results.add(PdfTextExtractor.getTextFromPage(page, LocationTextExtractionStrategy()))
+                }
             }
-            return missingPagesTexts
         }
+        return results
     }
 
     private fun <T> executeInBackground(
