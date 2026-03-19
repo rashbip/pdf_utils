@@ -97,7 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     setState(() => _statusMessage = 'Converting ${images.length} images to PDF...');
     try {
-      final file = await PdfUtils.imagesToPdf(
+      final file = await PdfUtils.nativeImagesToPdf(
         imagePaths: images.map((e) => e.path).toList(),
         outputFileName: 'converted_images_${DateTime.now().millisecondsSinceEpoch}',
       );
@@ -144,6 +144,123 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  Future<void> _mergePdfs() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+      allowMultiple: true,
+    );
+
+    if (result == null || result.files.isEmpty) return;
+
+    final paths = result.files.map((e) => e.path!).toList();
+    setState(() => _statusMessage = 'Merging ${paths.length} PDFs...');
+    try {
+      final file = await PdfUtils.mergePdfFiles(
+        filesPath: paths,
+        outputFileName: 'merged_${DateTime.now().millisecondsSinceEpoch}',
+      );
+      setState(() {
+        _statusMessage = 'Merged PDF created: ${file.path}';
+        _extractedImages = [];
+      });
+      await OpenFilex.open(file.path);
+    } catch (e) {
+      setState(() => _statusMessage = 'Error: $e');
+    }
+  }
+
+  Future<void> _protectPdf() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+
+    if (result == null || result.files.single.path == null) return;
+
+    setState(() => _statusMessage = 'Protecting PDF with password "1234"...');
+    try {
+      final file = await PdfUtils.protectPdf(
+        inputPath: result.files.single.path!,
+        password: '1234',
+        outputFileName: 'protected_${DateTime.now().millisecondsSinceEpoch}',
+      );
+      setState(() {
+        _statusMessage = 'Protected PDF created: ${file.path} (Password: 1234)';
+        _extractedImages = [];
+      });
+      await OpenFilex.open(file.path);
+    } catch (e) {
+      setState(() => _statusMessage = 'Error: $e');
+    }
+  }
+
+  Future<void> _extractText() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+
+    if (result == null || result.files.single.path == null) return;
+
+    setState(() => _statusMessage = 'Extracting text and metadata...');
+    try {
+      final doc = await PDFDoc.fromPath(result.files.single.path!);
+      final text = await doc.text;
+      final info = doc.info;
+
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(info.title ?? 'PDF Info'),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Author: ${info.author ?? 'Unknown'}'),
+                Text('Pages: ${doc.length}'),
+                const Divider(),
+                const Text('Extracted Text (Snippet):', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 5),
+                Text(text.length > 500 ? '${text.substring(0, 500)}...' : text),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
+          ],
+        ),
+      );
+      setState(() => _statusMessage = 'Text extraction complete.');
+    } catch (e) {
+      setState(() => _statusMessage = 'Error: $e');
+    }
+  }
+
+  Future<void> _convertToLongImage() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+
+    if (result == null || result.files.single.path == null) return;
+
+    setState(() => _statusMessage = 'Generating long image...');
+    try {
+      final file = await PdfUtils.pdfToLongImage(
+        pdfPath: result.files.single.path!,
+        outputFileName: 'long_image_${DateTime.now().millisecondsSinceEpoch}',
+      );
+      setState(() {
+        _statusMessage = 'Long image created: ${file.path}';
+        _extractedImages = [file.path];
+      });
+      await OpenFilex.open(file.path);
+    } catch (e) {
+      setState(() => _statusMessage = 'Error: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -158,36 +275,72 @@ class _MyHomePageState extends State<MyHomePage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               const Text(
-                'PDF Utils Functionalities',
+                'PDF Utils (Standalone)',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 20),
               
               _buildFeatureCard(
                 title: 'Professional Invoice',
-                description: 'Generate high-quality PDF invoices from structured data.',
+                description: 'Generate high-quality PDF invoices.',
                 icon: Icons.receipt_long,
                 onPressed: _generateInvoice,
                 color: Colors.blue.shade50,
               ),
-              const SizedBox(height: 15),
+              const SizedBox(height: 12),
               
               _buildFeatureCard(
-                title: 'Images to PDF',
-                description: 'Select multiple images and combine them into a single PDF.',
+                title: 'Native Images to PDF',
+                description: 'Fast, native conversion of images to PDF.',
                 icon: Icons.picture_as_pdf,
                 onPressed: _convertImagesToPdf,
                 color: Colors.green.shade50,
               ),
-              const SizedBox(height: 15),
+              const SizedBox(height: 12),
               
               _buildFeatureCard(
                 title: 'PDF to Images',
-                description: 'Extract each page of a PDF file as a separate JPEG image.',
+                description: 'Extract pages as separate JPEGs.',
                 icon: Icons.image,
                 onPressed: _extractPdfToImages,
                 color: Colors.orange.shade50,
+              ),
+              const SizedBox(height: 12),
+
+              _buildFeatureCard(
+                title: 'PDF to Long Image',
+                description: 'Combine all pages into one long vertical image.',
+                icon: Icons.view_headline,
+                onPressed: _convertToLongImage,
+                color: Colors.yellow.shade50,
+              ),
+              const SizedBox(height: 12),
+
+              _buildFeatureCard(
+                title: 'Merge PDFs',
+                description: 'Combine multiple PDF files into one.',
+                icon: Icons.merge_type,
+                onPressed: _mergePdfs,
+                color: Colors.purple.shade50,
+              ),
+              const SizedBox(height: 12),
+
+              _buildFeatureCard(
+                title: 'Protect PDF (Lock)',
+                description: 'Add password protection to your PDF.',
+                icon: Icons.lock,
+                onPressed: _protectPdf,
+                color: Colors.red.shade50,
+              ),
+              const SizedBox(height: 12),
+
+              _buildFeatureCard(
+                title: 'Text & Metadata',
+                description: 'Extract text, info, and author data.',
+                icon: Icons.text_snippet,
+                onPressed: _extractText,
+                color: Colors.teal.shade50,
               ),
               
               const SizedBox(height: 30),
@@ -270,12 +423,12 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       description,
-                      style: const TextStyle(fontSize: 14, color: Colors.black54),
+                      style: const TextStyle(fontSize: 12, color: Colors.black54),
                     ),
                   ],
                 ),
