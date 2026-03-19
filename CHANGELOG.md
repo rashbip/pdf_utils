@@ -1,3 +1,9 @@
+# 3.2.0
+
+* **New Feature: Smart Blank Page Removal**: Efficiently identifies and removes empty pages by scanning for both text and graphical objects.
+* **New Feature: Dynamic Page Numbering & Custom Headers**: Add text with `{n}` and `{total}` placeholders at 6 different placements (Top/Bottom, Left/Center/Right).
+* **Enhanced Navigation Feature**: Added cards for Page Numbering and Blank Page Removal in the example application's manipulation section.
+
 # 3.1.0
 
 * **New Feature: PDF Page Insertion**: Insert images (JPG/PNG) or other PDF pages into an existing document at any 0-based index or using `beforePage` / `afterPage` convenience methods.

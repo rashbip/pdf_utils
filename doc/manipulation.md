@@ -54,3 +54,12 @@ final indexed = await PdfUtils.addPage(
   index: 3, 
 );
 ```
+
+## Smart Blank Page Removal
+Remove effectively empty pages from a PDF. A page is considered blank if it contains **no text** and **no graphics/images**.
+
+```dart
+final cleaned = await PdfUtils.removeBlankPages(
+  filePath: '/path/to/messy_doc.pdf',
+);
+```
