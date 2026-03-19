@@ -56,10 +56,111 @@ class _PageManipulationFeatureState extends State<PageManipulationFeature> {
     }
   }
 
+  Future<void> _reorderPages() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+    if (result == null || result.files.single.path == null) return;
+
+    widget.onStatusChange('Swapping first two pages...');
+    try {
+      final file = await PdfUtils.manipulatePages(
+        filePath: result.files.single.path!,
+        // This will swap the first two pages and keep them as the only pages
+        // To keep all pages in a real app, you'd get the full page count first
+        reorder: [2, 1], 
+      );
+      if (file != null) {
+        widget.onStatusChange('Reordered PDF: ${file.path}');
+        await OpenFilex.open(file.path);
+      }
+    } catch (e) {
+      widget.onStatusChange('Error reordering PDF: $e');
+    }
+  }
+
+  Future<void> _insertPage() async {
+    FilePickerResult? sourceResult = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+    if (sourceResult == null || sourceResult.files.single.path == null) return;
+
+    // Pick an image or PDF to insert
+    FilePickerResult? insertResult = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+    );
+    if (insertResult == null || insertResult.files.single.path == null) return;
+
+    widget.onStatusChange('Inserting page after first page...');
+    try {
+      final file = await PdfUtils.addPage(
+        filePath: sourceResult.files.single.path!,
+        insertPath: insertResult.files.single.path!,
+        afterPage: 1, 
+      );
+      if (file != null) {
+        widget.onStatusChange('Inserted PDF: ${file.path}');
+        await OpenFilex.open(file.path);
+      }
+    } catch (e) {
+      widget.onStatusChange('Error inserting page: $e');
+    }
+  }
+
+  Future<void> _resizePdfToA4() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+    if (result == null || result.files.single.path == null) return;
+
+    widget.onStatusChange('Resizing to A4 (595x842)...');
+    try {
+      final file = await PdfUtils.resizePdf(
+        filePath: result.files.single.path!,
+        width: 595, // A4 width in points
+        height: 842, // A4 height in points
+      );
+      if (file != null) {
+        widget.onStatusChange('Resized PDF: ${file.path}');
+        await OpenFilex.open(file.path);
+      }
+    } catch (e) {
+      widget.onStatusChange('Error resizing PDF: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
+        _buildFeatureCard(
+          title: 'Resize to A4',
+          description: 'Scale all pages to fit A4 (centered, white bg).',
+          icon: Icons.aspect_ratio,
+          onPressed: _resizePdfToA4,
+          color: Colors.purple.shade50,
+        ),
+        const SizedBox(height: 12),
+        _buildFeatureCard(
+          title: 'Insert Page',
+          description: 'Insert an image or PDF after the first page.',
+          icon: Icons.add_circle_outline,
+          onPressed: _insertPage,
+          color: Colors.green.shade50,
+        ),
+        const SizedBox(height: 12),
+        _buildFeatureCard(
+          title: 'Swap First Two Pages',
+          description: 'Reorder pages 1 and 2 (and keep only those).',
+          icon: Icons.swap_vert,
+          onPressed: _reorderPages,
+          color: Colors.blue.shade50,
+        ),
+        const SizedBox(height: 12),
         _buildFeatureCard(
           title: 'Rotate Page (90°)',
           description: 'Rotate the first page clockwise.',

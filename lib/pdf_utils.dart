@@ -311,4 +311,42 @@ class PdfUtils {
       "subject": info.subject,
     };
   }
+
+  /// Adds a page (image or another PDF) to an existing PDF at a specific location.
+  /// [index] is 0-based. Use [beforePage] or [afterPage] (1-based) for convenience.
+  static Future<File?> addPage({
+    required String filePath,
+    required String insertPath,
+    int? index,
+    int? beforePage,
+    int? afterPage,
+  }) async {
+    int targetIndex = index ?? 0;
+    if (beforePage != null) targetIndex = beforePage - 1;
+    if (afterPage != null) targetIndex = afterPage;
+
+    final String? resultPath = await _channel.invokeMethod('addPage', {
+      'filePath': filePath,
+      'insertPath': insertPath,
+      'index': targetIndex,
+    });
+    return resultPath != null ? File(resultPath) : null;
+  }
+
+  /// Resizes pages of a PDF to a target [width] and [height], while maintaining aspect ratio and centering the content.
+  /// If [pages] is null, all pages are resized.
+  static Future<File?> resizePdf({
+    required String filePath,
+    required double width,
+    required double height,
+    List<int>? pages,
+  }) async {
+    final String? resultPath = await _channel.invokeMethod('resizePdf', {
+      'filePath': filePath,
+      'width': width,
+      'height': height,
+      'pages': pages,
+    });
+    return resultPath != null ? File(resultPath) : null;
+  }
 }

@@ -105,6 +105,19 @@ class PdfUtilsPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 val pageNumbers = call.argument<List<Int>>("pageNumbers") ?: listOf()
                 executeInBackground(result) { getSplitPDFPathsByPageNumbers(filePath, pageNumbers, activity) }
             }
+            "addPage" -> {
+                val filePath = call.argument<String>("filePath") ?: ""
+                val insertPath = call.argument<String>("insertPath") ?: ""
+                val index = call.argument<Int>("index") ?: 0
+                executeInBackground(result) { insertPageToPdf(filePath, insertPath, index, activity) }
+            }
+            "resizePdf" -> {
+                val filePath = call.argument<String>("filePath") ?: ""
+                val width = call.argument<Double>("width") ?: 595.0
+                val height = call.argument<Double>("height") ?: 842.0
+                val pages = call.argument<List<Int>>("pages")
+                executeInBackground(result) { resizePdfPages(filePath, width.toFloat(), height.toFloat(), pages, activity) }
+            }
             "handlePageManipulation" -> {
                 val filePath = call.argument<String>("filePath") ?: ""
                 val reorder = call.argument<List<Int>>("reorder") ?: emptyList()
