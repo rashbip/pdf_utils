@@ -1,10 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'screens/invoice_screen.dart';
-import 'screens/image_to_pdf_screen.dart';
-import 'screens/pdf_to_image_screen.dart';
-import 'screens/merge_pdf_screen.dart';
-import 'screens/pdf_protection_screen.dart';
-import 'screens/text_extraction_screen.dart';
+import 'features/invoice_feature.dart';
+import 'features/image_to_pdf_feature.dart';
+import 'features/pdf_to_image_feature.dart';
+import 'features/merge_pdf_feature.dart';
+import 'features/pdf_protection_feature.dart';
+import 'features/text_extraction_feature.dart';
 
 void main() {
   runApp(const MyApp());
@@ -37,6 +38,18 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  String? _statusMessage;
+  List<String> _extractedImages = [];
+
+  void _onStatusChange(String message, {List<String>? previews}) {
+    setState(() {
+      _statusMessage = message;
+      if (previews != null) {
+        _extractedImages = previews;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,111 +64,80 @@ class _MyHomePageState extends State<MyHomePage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               const Text(
-                'PDF Utils (Standalone)',
+                'PDF Utils (Standalone v2.1)',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
+              const SizedBox(height: 10),
+              const Text(
+                'A single screen with modular feature components.',
+                style: TextStyle(fontSize: 14, color: Colors.black54),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 25),
+              
+              InvoiceFeature(onStatusChange: _onStatusChange),
+              const SizedBox(height: 12),
+              
+              ImageToPdfFeature(onStatusChange: _onStatusChange),
+              const SizedBox(height: 12),
+              
+              PdfToImageFeature(onProgress: (msg, {previews}) => _onStatusChange(msg, previews: previews)),
+              const SizedBox(height: 12),
+
+              MergePdfFeature(onStatusChange: _onStatusChange),
+              const SizedBox(height: 12),
+
+              PdfProtectionFeature(onStatusChange: _onStatusChange),
+              const SizedBox(height: 12),
+
+              TextExtractionFeature(onStatusChange: _onStatusChange),
+              
               const SizedBox(height: 30),
-              
-              _buildFeatureCard(
-                title: 'Professional Invoice',
-                description: 'Generate high-quality PDF invoices.',
-                icon: Icons.receipt_long,
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const InvoiceScreen())),
-                color: Colors.blue.shade50,
-              ),
-              const SizedBox(height: 12),
-              
-              _buildFeatureCard(
-                title: 'Images to PDF',
-                description: 'Fast, native conversion of images to PDF.',
-                icon: Icons.picture_as_pdf,
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ImageToPdfScreen())),
-                color: Colors.green.shade50,
-              ),
-              const SizedBox(height: 12),
-              
-              _buildFeatureCard(
-                title: 'PDF to Images',
-                description: 'Extract pages as separate JPEGs or Long Image.',
-                icon: Icons.image,
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PdfToImageScreen())),
-                color: Colors.orange.shade50,
-              ),
-              const SizedBox(height: 12),
-
-              _buildFeatureCard(
-                title: 'Merge & Split PDFs',
-                description: 'Combine multiple PDF files or select specific pages.',
-                icon: Icons.merge_type,
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MergePdfScreen())),
-                color: Colors.purple.shade50,
-              ),
-              const SizedBox(height: 12),
-
-              _buildFeatureCard(
-                title: 'PDF Protection',
-                description: 'Add or remove password protection.',
-                icon: Icons.lock,
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PdfProtectionScreen())),
-                color: Colors.red.shade50,
-              ),
-              const SizedBox(height: 12),
-
-              _buildFeatureCard(
-                title: 'Text & Metadata',
-                description: 'Extract text, info, and author data.',
-                icon: Icons.text_snippet,
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TextExtractionScreen())),
-                color: Colors.teal.shade50,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFeatureCard({
-    required String title,
-    required String description,
-    required IconData icon,
-    required VoidCallback onPressed,
-    required Color color,
-  }) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade300),
-      ),
-      color: color,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              Icon(icon, size: 40, color: Colors.black54),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      description,
-                      style: const TextStyle(fontSize: 12, color: Colors.black54),
-                    ),
-                  ],
+              if (_statusMessage != null)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    _statusMessage!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 13, color: Colors.blueGrey),
+                  ),
                 ),
-              ),
-              const Icon(Icons.chevron_right),
+                
+              if (_extractedImages.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                const Text(
+                  'Extracted Previews:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 150,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _extractedImages.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 10),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.file(
+                            File(_extractedImages[index]),
+                            fit: BoxFit.cover,
+                            width: 100,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+              const SizedBox(height: 40),
             ],
           ),
         ),
