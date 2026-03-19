@@ -1,0 +1,18 @@
+# Ignore temporary files used during development
+/temp/
+
+# Ignore IDE specific metadata
+.idea/
+*.iml
+.metadata
+
+# Ignore local build artifacts
+.dart_tool/
+/build/
+/coverage/
+
+# Don't publish screenshots if not desired (optional)
+# doc/screenshots/
+
+# Ignore pubspec.lock as per package best practices
+pubspec.lock

@@ -1,11 +1,10 @@
 # pdf_utils
 
-A comprehensive Flutter plugin for professional PDF manipulation and generation.
+A comprehensive, standalone Flutter plugin for professional PDF manipulation and generation.
 
 [![pub package](https://img.shields.io/pub/v/pdf_utils.svg)](https://pub.dev/packages/pdf_utils)
 [![Dart](https://img.shields.io/badge/language-Dart-blue.svg)](https://dart.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/rashbip/pdf_utils)
 
 [**Pub.dev**](https://pub.dev/packages/pdf_utils) | [**Repository**](https://github.com/rashbip/pdf_utils) | [**Issues**](https://github.com/rashbip/pdf_utils/issues) | [**Documentation**](doc/invoice_generation.md)
 
@@ -21,10 +20,13 @@ A comprehensive Flutter plugin for professional PDF manipulation and generation.
 
 ## Features
 
-- **Professional Invoice Generation**: Create stunning PDF invoices with customizable models for suppliers, customers, and items.
-- **Image to PDF**: Effortlessly convert a list of image paths into a single multipage PDF.
-- **PDF to Image**: Extract PDF pages as high-quality JPEG images with progress tracking.
-- **Customizable**: Add custom QR codes, logos, and currency symbols to your invoices.
+- **Professional Invoice Generation**: Create stunning PDF invoices with customizable models and high-level styling.
+- **Standalone Native Processing**: Powered by native `PDFBox` (Android) and `PDFKit` (iOS) for maximum performance and reliability.
+- **PDF Extraction**: Efficiently extract high-quality page images and long vertical images.
+- **Text & Metadata**: Powerful text extraction and metadata retrieval using `PDFDoc` with support for encrypted documents.
+- **Security**: Lock and unlock PDF documents with password protection.
+- **Merging & Splitting**: Merge multiple PDF files or choose specific pages from a document to combine.
+- **Optimized Image Conversion**: Both standard (`pdf` package) and highly optimized native image-to-PDF conversion.
 
 ## Installation
 
@@ -32,7 +34,7 @@ Add `pdf_utils` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  pdf_utils: ^1.0.0
+  pdf_utils: ^1.2.0
 ```
 
 ## Quick Start
@@ -40,45 +42,34 @@ dependencies:
 ### 1. Generating an Invoice
 
 ```dart
-final invoice = Invoice(
-  supplier: Supplier(name: 'BIP Scanner', address: 'Tech Park', paymentInfo: 'paypal.me/bip'),
-  customer: Customer(name: 'Client A', address: 'Main St'),
-  info: InvoiceInfo(
-    date: DateTime.now(),
-    dueDate: DateTime.now().add(const Duration(days: 7)),
-    description: 'Service Fee',
-    number: '2024-001',
-  ),
-  items: [
-    InvoiceItem(
-      description: 'PDF Development',
-      date: DateTime.now(),
-      quantity: 1,
-      vat: 0.1,
-      unitPrice: 100.0,
-    ),
-  ],
-);
-
+final invoice = Invoice(...);
 File pdfFile = await PdfInvoiceGenerator.generate(invoice);
 ```
 
-### 2. Images to PDF
+### 2. Merging PDFs
 
 ```dart
-File pdf = await PdfUtils.imagesToPdf(
-  imagePaths: ['path1.jpg', 'path2.png'],
-  outputFileName: 'my_document',
+File merged = await PdfUtils.mergePdfFiles(
+  filesPath: ['path1.pdf', 'path2.pdf'],
+  outputFileName: 'combined_document',
 );
 ```
 
-### 3. PDF to Images
+### 3. Text Extraction
 
 ```dart
-List<String> images = await PdfUtils.pdfToImages(
-  pdfPath: 'doc.pdf',
-  outputDirectory: 'output/path',
-  onProgress: (cur, total) => print('$cur/$total'),
+final doc = await PDFDoc.fromPath('doc.pdf');
+String text = await doc.text;
+print('Total pages: ${doc.length}');
+```
+
+### 4. PDF Protection
+
+```dart
+File locked = await PdfUtils.protectPdf(
+  inputPath: 'doc.pdf',
+  password: 'secret_password',
+  outputFileName: 'secure_doc',
 );
 ```
 
@@ -86,11 +77,12 @@ List<String> images = await PdfUtils.pdfToImages(
 
 For more detailed guides, check out the [doc](doc/) directory:
 - [Invoice Generation](doc/invoice_generation.md)
-- [PDF Manipulation (Conversion & Extraction)](doc/pdf_manipulation.md)
+- [PDF Manipulation (Conversion, Merging, Security)](doc/pdf_manipulation.md)
+- [Text Extraction & Metadata](doc/text_extraction.md)
 
 ## Example App
 
-Check the `example` folder for a complete demonstration of the plugin features.
+Check the `example` folder for a complete demonstration of the plugin's features on real devices.
 
 ## License
 

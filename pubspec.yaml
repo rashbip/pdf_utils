@@ -1,6 +1,6 @@
 name: pdf_utils
 description: "A comprehensive Flutter plugin for PDF manipulation, including professional invoice generation, image-to-PDF conversion, and PDF-to-image extraction."
-version: 1.0.1
+version: 1.2.0
 homepage: https://github.com/rashbip/pdf_utils # TODO: Replace with actual repository URL
 
 environment:
