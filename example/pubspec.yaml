@@ -16,8 +16,8 @@ dependencies:
     path: ../
   path_provider: ^2.1.5
   open_filex: ^4.6.0
-  image_picker: ^1.0.7
-  file_picker: ^8.0.0+1
+  image_picker: ^1.1.2
+  file_picker: ^8.1.7
 
 dev_dependencies:
   flutter_test:

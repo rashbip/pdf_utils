@@ -1,10 +1,10 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:pdf_utils/pdf_utils.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:open_filex/open_filex.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:file_picker/file_picker.dart';
+import 'screens/invoice_screen.dart';
+import 'screens/image_to_pdf_screen.dart';
+import 'screens/pdf_to_image_screen.dart';
+import 'screens/merge_pdf_screen.dart';
+import 'screens/pdf_protection_screen.dart';
+import 'screens/text_extraction_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -37,230 +37,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String? _statusMessage;
-  List<String> _extractedImages = [];
-
-  Future<void> _generateInvoice() async {
-    setState(() => _statusMessage = 'Generating Invoice...');
-    try {
-      final invoice = Invoice(
-        supplier: const Supplier(
-          name: 'BIP Scanner',
-          address: '123 Tech Street, Silicon Valley',
-          paymentInfo: 'PayPal: pay@bip.com',
-          website: 'www.bipscanner.com',
-        ),
-        customer: const Customer(
-          name: 'Happy Client',
-          address: '456 User Lane, App City',
-        ),
-        info: InvoiceInfo(
-          date: DateTime.now(),
-          dueDate: DateTime.now().add(const Duration(days: 14)),
-          description: 'Software Development Services',
-          number: 'INV-${DateTime.now().millisecondsSinceEpoch}',
-        ),
-        items: [
-          InvoiceItem(
-            description: 'Flutter Plugin Development',
-            date: DateTime.now(),
-            quantity: 1,
-            vat: 0.15,
-            unitPrice: 1500.0,
-          ),
-          InvoiceItem(
-            description: 'Testing & Documentation',
-            date: DateTime.now(),
-            quantity: 2,
-            vat: 0.15,
-            unitPrice: 250.0,
-          ),
-        ],
-      );
-
-      final file = await PdfInvoiceGenerator.generate(invoice);
-      setState(() {
-        _statusMessage = 'Invoice generated: ${file.path}';
-        _extractedImages = [];
-      });
-      await OpenFilex.open(file.path);
-    } catch (e) {
-      setState(() => _statusMessage = 'Error: $e');
-    }
-  }
-
-  Future<void> _convertImagesToPdf() async {
-    final ImagePicker picker = ImagePicker();
-    final List<XFile> images = await picker.pickMultiImage();
-
-    if (images.isEmpty) return;
-
-    setState(() => _statusMessage = 'Converting ${images.length} images to PDF...');
-    try {
-      final file = await PdfUtils.nativeImagesToPdf(
-        imagePaths: images.map((e) => e.path).toList(),
-        outputFileName: 'converted_images_${DateTime.now().millisecondsSinceEpoch}',
-      );
-      setState(() {
-        _statusMessage = 'PDF created: ${file.path}';
-        _extractedImages = [];
-      });
-      await OpenFilex.open(file.path);
-    } catch (e) {
-      setState(() => _statusMessage = 'Error: $e');
-    }
-  }
-
-  Future<void> _extractPdfToImages() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf'],
-    );
-
-    if (result == null || result.files.single.path == null) return;
-
-    final pdfPath = result.files.single.path!;
-    final appDir = await getApplicationDocumentsDirectory();
-    final outputDir = '${appDir.path}/extracted_${DateTime.now().millisecondsSinceEpoch}';
-
-    setState(() => _statusMessage = 'Extracting pages from PDF...');
-    try {
-      final imagePaths = await PdfUtils.pdfToImages(
-        pdfPath: pdfPath,
-        outputDirectory: outputDir,
-        onProgress: (current, total) {
-          setState(() {
-            _statusMessage = 'Extracting: $current / $total';
-          });
-        },
-      );
-
-      setState(() {
-        _statusMessage = 'Extracted ${imagePaths.length} images to $outputDir';
-        _extractedImages = imagePaths;
-      });
-    } catch (e) {
-      setState(() => _statusMessage = 'Error: $e');
-    }
-  }
-
-  Future<void> _mergePdfs() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf'],
-      allowMultiple: true,
-    );
-
-    if (result == null || result.files.isEmpty) return;
-
-    final paths = result.files.map((e) => e.path!).toList();
-    setState(() => _statusMessage = 'Merging ${paths.length} PDFs...');
-    try {
-      final file = await PdfUtils.mergePdfFiles(
-        filesPath: paths,
-        outputFileName: 'merged_${DateTime.now().millisecondsSinceEpoch}',
-      );
-      setState(() {
-        _statusMessage = 'Merged PDF created: ${file.path}';
-        _extractedImages = [];
-      });
-      await OpenFilex.open(file.path);
-    } catch (e) {
-      setState(() => _statusMessage = 'Error: $e');
-    }
-  }
-
-  Future<void> _protectPdf() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf'],
-    );
-
-    if (result == null || result.files.single.path == null) return;
-
-    setState(() => _statusMessage = 'Protecting PDF with password "1234"...');
-    try {
-      final file = await PdfUtils.protectPdf(
-        inputPath: result.files.single.path!,
-        password: '1234',
-        outputFileName: 'protected_${DateTime.now().millisecondsSinceEpoch}',
-      );
-      setState(() {
-        _statusMessage = 'Protected PDF created: ${file.path} (Password: 1234)';
-        _extractedImages = [];
-      });
-      await OpenFilex.open(file.path);
-    } catch (e) {
-      setState(() => _statusMessage = 'Error: $e');
-    }
-  }
-
-  Future<void> _extractText() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf'],
-    );
-
-    if (result == null || result.files.single.path == null) return;
-
-    setState(() => _statusMessage = 'Extracting text and metadata...');
-    try {
-      final doc = await PDFDoc.fromPath(result.files.single.path!);
-      final text = await doc.text;
-      final info = doc.info;
-
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(info.title ?? 'PDF Info'),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Author: ${info.author ?? 'Unknown'}'),
-                Text('Pages: ${doc.length}'),
-                const Divider(),
-                const Text('Extracted Text (Snippet):', style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 5),
-                Text(text.length > 500 ? '${text.substring(0, 500)}...' : text),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
-          ],
-        ),
-      );
-      setState(() => _statusMessage = 'Text extraction complete.');
-    } catch (e) {
-      setState(() => _statusMessage = 'Error: $e');
-    }
-  }
-
-  Future<void> _convertToLongImage() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf'],
-    );
-
-    if (result == null || result.files.single.path == null) return;
-
-    setState(() => _statusMessage = 'Generating long image...');
-    try {
-      final file = await PdfUtils.pdfToLongImage(
-        pdfPath: result.files.single.path!,
-        outputFileName: 'long_image_${DateTime.now().millisecondsSinceEpoch}',
-      );
-      setState(() {
-        _statusMessage = 'Long image created: ${file.path}';
-        _extractedImages = [file.path];
-      });
-      await OpenFilex.open(file.path);
-    } catch (e) {
-      setState(() => _statusMessage = 'Error: $e');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -279,58 +55,49 @@ class _MyHomePageState extends State<MyHomePage> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
               
               _buildFeatureCard(
                 title: 'Professional Invoice',
                 description: 'Generate high-quality PDF invoices.',
                 icon: Icons.receipt_long,
-                onPressed: _generateInvoice,
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const InvoiceScreen())),
                 color: Colors.blue.shade50,
               ),
               const SizedBox(height: 12),
               
               _buildFeatureCard(
-                title: 'Native Images to PDF',
+                title: 'Images to PDF',
                 description: 'Fast, native conversion of images to PDF.',
                 icon: Icons.picture_as_pdf,
-                onPressed: _convertImagesToPdf,
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ImageToPdfScreen())),
                 color: Colors.green.shade50,
               ),
               const SizedBox(height: 12),
               
               _buildFeatureCard(
                 title: 'PDF to Images',
-                description: 'Extract pages as separate JPEGs.',
+                description: 'Extract pages as separate JPEGs or Long Image.',
                 icon: Icons.image,
-                onPressed: _extractPdfToImages,
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PdfToImageScreen())),
                 color: Colors.orange.shade50,
               ),
               const SizedBox(height: 12),
 
               _buildFeatureCard(
-                title: 'PDF to Long Image',
-                description: 'Combine all pages into one long vertical image.',
-                icon: Icons.view_headline,
-                onPressed: _convertToLongImage,
-                color: Colors.yellow.shade50,
-              ),
-              const SizedBox(height: 12),
-
-              _buildFeatureCard(
-                title: 'Merge PDFs',
-                description: 'Combine multiple PDF files into one.',
+                title: 'Merge & Split PDFs',
+                description: 'Combine multiple PDF files or select specific pages.',
                 icon: Icons.merge_type,
-                onPressed: _mergePdfs,
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MergePdfScreen())),
                 color: Colors.purple.shade50,
               ),
               const SizedBox(height: 12),
 
               _buildFeatureCard(
-                title: 'Protect PDF (Lock)',
-                description: 'Add password protection to your PDF.',
+                title: 'PDF Protection',
+                description: 'Add or remove password protection.',
                 icon: Icons.lock,
-                onPressed: _protectPdf,
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PdfProtectionScreen())),
                 color: Colors.red.shade50,
               ),
               const SizedBox(height: 12),
@@ -339,54 +106,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 title: 'Text & Metadata',
                 description: 'Extract text, info, and author data.',
                 icon: Icons.text_snippet,
-                onPressed: _extractText,
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TextExtractionScreen())),
                 color: Colors.teal.shade50,
               ),
-              
-              const SizedBox(height: 30),
-              if (_statusMessage != null)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    border: Border.all(color: Colors.grey.shade300),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    _statusMessage!,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 13, color: Colors.black87),
-                  ),
-                ),
-                
-              if (_extractedImages.isNotEmpty) ...[
-                const SizedBox(height: 20),
-                const Text(
-                  'Extracted Previews:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  height: 150,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _extractedImages.length,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 10),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.file(
-                            File(_extractedImages[index]),
-                            fit: BoxFit.cover,
-                            width: 100,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
             ],
           ),
         ),

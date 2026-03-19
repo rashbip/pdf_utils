@@ -1,3 +1,10 @@
+# 2.1.0
+
+* **Improved Example App**: Refactored to feature-based structure for better readability.
+* **Remove PDF Password**: Added support and example for removing (unlocking) PDF passwords.
+* **Android/Gradle Upgrades**: Upgraded Gradle and internal dependencies for better compatibility.
+* **Flutter Optimizations**: Updated dependencies and improved method channel handling.
+
 # 2.0.0
 
 * **Standalone Implementation**: Removed external dependencies (`pdf_worker` and `flutter_pdf_text`).

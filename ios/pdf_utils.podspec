@@ -1,17 +1,17 @@
 Pod::Spec.new do |s|
   s.name             = 'pdf_utils'
-  s.version          = '0.0.1'
-  s.summary          = 'A new Flutter plugin project.'
+  s.version          = '2.1.0'
+  s.summary          = 'A comprehensive Flutter plugin for PDF manipulation, including professional invoice generation, image-to-PDF conversion, and PDF-to-image extraction.'
   s.description      = <<-DESC
-A new Flutter plugin project.
+A comprehensive Flutter plugin for PDF manipulation, including professional invoice generation, image-to-PDF conversion, and PDF-to-image extraction.
                        DESC
-  s.homepage         = 'http://example.com'
+  s.homepage         = 'https://github.com/rashbip/pdf_utils'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
+  s.author           = { 'BiplobORG' => 'biplob2055bd@gmail.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.platform = :ios, '12.0'
+  s.platform = :ios, '13.0'
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
