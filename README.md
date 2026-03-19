@@ -21,12 +21,15 @@ A comprehensive, standalone Flutter plugin for professional PDF manipulation and
 ## Features
 
 - **Professional Invoice Generation**: Create stunning PDF invoices with customizable models and high-level styling.
-- **Standalone Native Processing**: Powered by native `PDFBox` (Android) and `PDFKit` (iOS) for maximum performance and reliability.
+- **Standalone Native Processing**: Powered by native `PDFBox` (Android) and `PDFKit` (iOS) for maximum performance and reliability. **Apache 2.0 / MIT Compliant.**
+- **Smart PDF Resizing**: Rescale pages to match specific targets (like A4) while maintaining aspect ratio and centering.
+- **Page Manipulation**: Reorder, delete, rotate, and **Insert** (images or PDF pages) in a single pass.
 - **PDF Extraction**: Efficiently extract high-quality page images and long vertical images.
 - **Text & Metadata**: Powerful text extraction and metadata retrieval using `PDFDoc` with support for encrypted documents.
-- **Security**: Lock and unlock PDF documents with password protection.
-- **Merging & Splitting**: Merge multiple PDF files or choose specific pages from a document to combine.
-- **Optimized Image Conversion**: Both standard (`pdf` package) and highly optimized native image-to-PDF conversion.
+- **Security Analysis**: Retrieve detailed security permissions and validity via code.
+- **Locking & Unlocking**: Protect PDF documents with passwords or remove them entirely.
+- **Merging & Splitting**: Combine multiple PDFs or divide them by page ranges.
+- **Optimized Image Conversion**: Both standard and highly optimized native image-to-PDF converters.
 
 ## Installation
 
@@ -34,7 +37,7 @@ Add `pdf_utils` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  pdf_utils: ^2.0.0
+  pdf_utils: ^3.1.0
 ```
 
 ## Quick Start

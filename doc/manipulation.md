@@ -28,3 +28,29 @@ void manipulate() async {
 ### Key Notes
 - `reorder`, `delete`, and `rotate` list indices are all **1-indexed** to match standard PDF page identification.
 - Any page not in the `reorder` list but also not in the `delete` list won't be in the final document.
+
+## Page Insertion
+`pdf_utils` allows you to insert new pages (from images or other PDFs) into an existing document with flexible positioning.
+
+```dart
+// Insert an image after the second page
+final inserted = await PdfUtils.addPage(
+  filePath: '/path/to/source.pdf',
+  insertPath: '/path/to/image.jpg',
+  afterPage: 2, 
+);
+
+// Insert a PDF before the first page
+final prefixed = await PdfUtils.addPage(
+  filePath: '/path/to/source.pdf',
+  insertPath: '/path/to/other.pdf',
+  beforePage: 1, 
+);
+
+// Insert directly at a 0-based index
+final indexed = await PdfUtils.addPage(
+  filePath: '/path/to/source.pdf',
+  insertPath: '/path/to/other.pdf',
+  index: 3, 
+);
+```

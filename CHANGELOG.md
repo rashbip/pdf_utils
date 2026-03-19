@@ -1,3 +1,11 @@
+# 3.1.0
+
+* **New Feature: PDF Page Insertion**: Insert images (JPG/PNG) or other PDF pages into an existing document at any 0-based index or using `beforePage` / `afterPage` convenience methods.
+* **New Feature: Smart PDF Resizing**: Rescale PDF pages to target dimensions (e.g., A4) while maintaining aspect ratio and centering the content on a white background.
+* **New Feature: Selective Page Resizing**: Apply resizing to a specific page range or individual pages while keeping others at their original size.
+* **Enhanced Example App**: Added interactive examples for page swapping, page insertion, and A4 resizing in the manipulation feature section.
+* **Improved Inline Documentation**: Added comprehensive DartDoc for all new methods to assist developers.
+
 # 3.0.0
 **Note**: 
 * **Major Refactor: PDFBox Integration**: Tried Replacing ENgine with iText7 but it was working as expected, but the issue is license. It doesn't provide free license for commercial use, so Migrated the core engine back to PDFBox (Apache 2.0 license) for full legal compliance and maximum efficiency . And exploring iText7 helped me to add many more fature out of pdfbox. I'm just trying to add features that are not offered by pdfbox directly. 
