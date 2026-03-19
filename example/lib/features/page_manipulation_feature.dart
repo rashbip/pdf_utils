@@ -133,10 +133,71 @@ class _PageManipulationFeatureState extends State<PageManipulationFeature> {
     }
   }
 
+  Future<void> _removeBlankPages() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+    if (result == null || result.files.single.path == null) return;
+
+    widget.onStatusChange('Detecting and removing blank pages...');
+    try {
+      final file = await PdfUtils.removeBlankPages(
+        filePath: result.files.single.path!,
+      );
+      if (file != null) {
+        widget.onStatusChange('Cleaned PDF: ${file.path}');
+        await OpenFilex.open(file.path);
+      }
+    } catch (e) {
+      widget.onStatusChange('Error removing blank pages: $e');
+    }
+  }
+
+  Future<void> _addPageNumbers() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+    if (result == null || result.files.single.path == null) return;
+
+    widget.onStatusChange('Adding page numbers to bottom center...');
+    try {
+      final file = await PdfUtils.addPageNumbers(
+        filePath: result.files.single.path!,
+        customText: 'Report - Page {n} of {total}',
+        fontSize: 10,
+        placement: 'BOTTOM_RIGHT',
+      );
+      if (file != null) {
+        widget.onStatusChange('Numbered PDF: ${file.path}');
+        await OpenFilex.open(file.path);
+      }
+    } catch (e) {
+      widget.onStatusChange('Error adding page numbers: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
+        _buildFeatureCard(
+          title: 'Add Page Numbers',
+          description: 'Apply custom numbering with {n} and {total} tags.',
+          icon: Icons.format_list_numbered,
+          onPressed: _addPageNumbers,
+          color: Colors.indigo.shade50,
+        ),
+        const SizedBox(height: 12),
+        _buildFeatureCard(
+          title: 'Remove Blank Pages',
+          description: 'Smart detection of emtpy/blank pages.',
+          icon: Icons.auto_delete,
+          onPressed: _removeBlankPages,
+          color: Colors.red.shade50,
+        ),
+        const SizedBox(height: 12),
         _buildFeatureCard(
           title: 'Resize to A4',
           description: 'Scale all pages to fit A4 (centered, white bg).',

@@ -349,4 +349,33 @@ class PdfUtils {
     });
     return resultPath != null ? File(resultPath) : null;
   }
+
+  /// Removes blank pages (no text, no images) from the PDF.
+  static Future<File?> removeBlankPages({
+    required String filePath,
+  }) async {
+    final String? resultPath = await _channel.invokeMethod('removeBlankPages', {
+      'filePath': filePath,
+    });
+    return resultPath != null ? File(resultPath) : null;
+  }
+
+  /// Adds page numbers or custom text to the PDF at specific placements.
+  /// [customText] can include {n} for current page and {total} for total pages.
+  static Future<File?> addPageNumbers({
+    required String filePath,
+    String? customText,
+    double fontSize = 12,
+    String placement = 'BOTTOM_CENTER', // 'TOP_LEFT', 'TOP_CENTER', 'TOP_RIGHT', 'BOTTOM_LEFT', 'BOTTOM_CENTER', 'BOTTOM_RIGHT'
+    List<int>? pages,
+  }) async {
+    final String? resultPath = await _channel.invokeMethod('addPageNumbers', {
+      'filePath': filePath,
+      'customText': customText,
+      'fontSize': fontSize,
+      'placement': placement,
+      'pages': pages,
+    });
+    return resultPath != null ? File(resultPath) : null;
+  }
 }
