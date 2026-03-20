@@ -12,6 +12,11 @@ import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileInputStream
 
+enum class TextPlacement {
+    TOP_LEFT, TOP_CENTER, TOP_RIGHT,
+    BOTTOM_LEFT, BOTTOM_CENTER, BOTTOM_RIGHT
+}
+
 suspend fun addPageNumbersToPdf(
     path: String,
     customText: String?, // If null, use "Page n of m"
@@ -52,7 +57,7 @@ suspend fun addPageNumbersToPdf(
                     val rawText = customText ?: "Page $pageNumber of $totalPages"
                     val processedText = rawText.replace("{n}", pageNumber.toString()).replace("{total}", totalPages.toString())
                     
-                    val parts = if (imageFile != null && processedText.contains("{image}")) {
+                    val parts = if (processedText.contains("{image}")) {
                         val split = processedText.split("{image}")
                         split.getOrNull(0) to split.getOrNull(1)
                     } else {

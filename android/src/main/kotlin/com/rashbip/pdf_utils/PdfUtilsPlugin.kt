@@ -117,7 +117,7 @@ class PdfUtilsPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 val imagePath = call.argument<String>("imagePath")
                 val fontSize = call.argument<Double>("fontSize") ?: 12.0
                 val placementStr = call.argument<String>("placement") ?: "BOTTOM_CENTER"
-                val placement = runCatching { TextPlacement.valueOf(placementStr) }.getOrDefault(TextPlacement.BOTTOM_CENTER)
+                val placement = runCatching<TextPlacement> { TextPlacement.valueOf(placementStr) }.getOrDefault(TextPlacement.BOTTOM_CENTER)
                 val pages = call.argument<List<Int>>("pages")
                 executeInBackground(result) { addPageNumbersToPdf(filePath, customText, imagePath, fontSize.toFloat(), placement, pages, activity) }
             }
@@ -136,7 +136,7 @@ class PdfUtilsPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 val backgroundColor = call.argument<String>("backgroundColor")
                 val opacity = call.argument<Double>("opacity") ?: 0.5
                 val placementStr = call.argument<String>("placement") ?: "CENTER"
-                val placement = runCatching { WatermarkPlacement.valueOf(placementStr) }.getOrDefault(WatermarkPlacement.CENTER)
+                val placement = runCatching<WatermarkPlacement> { WatermarkPlacement.valueOf(placementStr) }.getOrDefault(WatermarkPlacement.CENTER)
                 val x = call.argument<Double>("x")
                 val y = call.argument<Double>("y")
                 
@@ -174,15 +174,6 @@ class PdfUtilsPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 val quality = call.argument<Int>("quality") ?: 80
                 val scale = call.argument<Double>("scale") ?: 1.0
                 executeInBackground(result) { getCompressedPDFPath(filePath, quality, scale, activity) }
-            }
-            "watermarkPdf" -> {
-                val filePath = call.argument<String>("filePath") ?: ""
-                val text = call.argument<String>("text") ?: ""
-                val fontSize = call.argument<Double>("fontSize") ?: 40.0
-                val opacity = call.argument<Double>("opacity") ?: 0.3
-                val rotation = call.argument<Double>("rotation") ?: 45.0
-                val color = call.argument<String>("color") ?: "#000000"
-                executeInBackground(result) { getWatermarkedPDFPath(filePath, text, fontSize.toFloat(), opacity.toFloat(), rotation.toFloat(), color, activity) }
             }
             "encryptPdf" -> {
                 val filePath = call.argument<String>("filePath") ?: ""

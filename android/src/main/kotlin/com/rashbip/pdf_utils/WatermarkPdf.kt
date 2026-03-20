@@ -66,7 +66,7 @@ suspend fun getWatermarkedPDFPath(
                 val width = page.mediaBox.width
                 val height = page.mediaBox.height
                 
-                val parts = if (imageFile != null && text.contains("{image}")) {
+                val parts = if (text.contains("{image}")) {
                     val split = text.split("{image}")
                     split.getOrNull(0) to split.getOrNull(1)
                 } else {

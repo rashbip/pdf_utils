@@ -161,12 +161,18 @@ class _PageManipulationFeatureState extends State<PageManipulationFeature> {
     );
     if (result == null || result.files.single.path == null) return;
 
-    widget.onStatusChange('Adding page numbers to bottom center...');
+    // Optional: Pick a logo
+    widget.onStatusChange('Select an optional logo (Cancel for none)...');
+    FilePickerResult? logoResult = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+    );
+
+    widget.onStatusChange('Adding page numbers...');
     try {
       final file = await PdfUtils.addPageNumbers(
         filePath: result.files.single.path!,
         customText: '{image} Report - Page {n} of {total}',
-        imagePath: r'D:\Android\flutter_projects\bip_scanner\plugins\pdf_utils\example\assets\logo.png',
+        imagePath: logoResult?.files.single.path,
         fontSize: 10,
         placement: PdfTextPlacement.bottomRight,
       );
