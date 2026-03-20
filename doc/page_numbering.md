@@ -3,13 +3,13 @@
 `pdf_utils` provides a flexible way to add page numbers, headers, and footers to your PDF documents.
 
 ## Dynamic Tags
-- `{n}`: Current page number (1-based).
 - `{total}`: Total pages in the document.
 - `{image}`: Inline image placeholder (requires `imagePath`).
 
 ## Placements
-- `PdfTextPlacement.topLeft`, `PdfTextPlacement.topCenter`, `PdfTextPlacement.topRight`
-- `PdfTextPlacement.bottomLeft`, `PdfTextPlacement.bottomCenter`, `PdfTextPlacement.bottomRight` (Default)
+Supported values via **`PdfTextPlacement`** enum:
+- `topLeft`, `topCenter`, `topRight`
+- `bottomLeft`, `bottomCenter`, `bottomRight` (Default)
 
 ## Basic Usage
 ```dart

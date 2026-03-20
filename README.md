@@ -23,7 +23,9 @@ A comprehensive, standalone Flutter plugin for professional PDF manipulation and
 - **Professional Invoice Generation**: Create stunning PDF invoices with customizable models and high-level styling.
 - **Standalone Native Processing**: Powered by native `PDFBox` (Android) and `PDFKit` (iOS) for maximum performance and reliability. **Apache 2.0 / MIT Compliant.**
 - **Smart PDF Resizing**: Rescale pages to match specific targets (like A4) while maintaining aspect ratio and centering.
-- **Dynamic Page Numbering**: Add custom headers/footers with `{n}` and `{total}` tags at 6 different placements.
+- **Dynamic Page Numbering**: Add custom headers/footers with `{n}` and `{total}` tags and inline **`{image}`** support.
+- **Advanced Watermarking**: Dynamic text and image branding with 9 placement options, opacity, and background support.
+- **Native PDF Printing**: Open the standard system print dialog directly from your app.
 - **Smart Blank Page Removal**: Automatically detect and strip empty pages from your document.
 - **Page Manipulation**: Reorder, delete, rotate, and **Insert** (images or PDF pages) in a single pass.
 - **PDF Extraction**: Efficiently extract high-quality page images and long vertical images.
@@ -39,7 +41,7 @@ Add `pdf_utils` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  pdf_utils: ^3.2.0
+  pdf_utils: ^3.2.1
 ```
 
 ## Quick Start

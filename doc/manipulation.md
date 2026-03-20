@@ -63,3 +63,13 @@ final cleaned = await PdfUtils.removeBlankPages(
   filePath: '/path/to/messy_doc.pdf',
 );
 ```
+
+## Native PDF Printing
+Launch the system's standard print dialog. Supports virtual printing (Save as PDF) and physical printers.
+
+```dart
+await PdfUtils.printPdf(
+  filePath: '/path/to/my_doc.pdf',
+  jobName: 'Print Job #1234', // Optional name for the print queue
+);
+```

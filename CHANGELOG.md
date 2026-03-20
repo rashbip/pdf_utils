@@ -1,3 +1,11 @@
+# 3.2.1
+
+* **New Feature: Native PDF Printing**: Launch the system print dialog directly from the plugin (Android).
+* **Advanced Watermarking**: Support for inline images via `{image}` tag, opacity control, background colors, and 10 placement options (9-grid + custom coordinates).
+* **Enhanced Page Numbering**: Support for inline logo images via `{image}` tag.
+* **Refactored API**: Introduced typesafe enums (`PdfTextPlacement`, `PdfWatermarkPlacement`) for all positioning and alignment parameters.
+* **Bug Fixes**: Improved tag consumption logic to ensure placeholders like `{image}` are stripped even if the source image is missing.
+
 # 3.2.0
 
 * **New Feature: Smart Blank Page Removal**: Efficiently identifies and removes empty pages by scanning for both text and graphical objects.

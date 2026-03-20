@@ -1,35 +1,47 @@
-# PDF Watermarking
+# Advanced Watermarking
 
-The `pdf_utils` plugin provides highly customizable text watermarking using the iText7 library.
+`pdf_utils` allows you to brand your documents with highly customizable text and image watermarks.
 
-## Native Watermarking
-Apply clear, professional text watermarks over or under existing page content.
+## New Features (v3.2.1+)
+- **Inline Images**: Embed your logo using the `{image}` tag.
+- **Opacity**: Control transparency (0.0 to 1.0).
+- **Custom Positioning**: Use a 9-grid system or specify exact coordinates.
+- **Backgrounds**: Draw a colored rectangular plate behind the watermark.
 
+## Placements
+Supported values via **`PdfWatermarkPlacement`** enum:
+- `topLeft`, `topCenter`, `topRight`
+- `centerLeft`, `center`, `centerRight`
+- `bottomLeft`, `bottomCenter`, `bottomRight`
+- `custom` (requires `customX` and `customY`)
+
+## Basic Text Watermark
 ```dart
-import 'package:pdf_utils/pdf_utils.dart';
-
-void watermark() async {
-  final watermarked = await PdfUtils.watermarkPdf(
-    filePath: '/path/to/my_doc.pdf',
-    text: 'CONFIDENTIAL',
-    fontSize: 60.0,
-    opacity: 0.2, // Text transparency (0.0-1.0)
-    rotation: 45.0, // Angle in degrees
-    color: '#FF0000', // Hex color string
-    position: 'Center', // See position options below
-    layer: 'OverContent', // 'OverContent' or 'UnderContent'
-  );
-  
-  if (watermarked != null) {
-    print('Watermarked PDF saved at: ${watermarked.path}');
-  }
-}
+final watermarked = await PdfUtils.addWatermark(
+  filePath: '/path/to/doc.pdf',
+  text: 'CONFIDENTIAL',
+  color: '#FF0000', // Red
+  opacity: 0.1,
+  placement: PdfWatermarkPlacement.center,
+);
 ```
 
-### Positioning
-Available positions:
-- `Center` (default)
-- `TopLeft`, `TopCenter`, `TopRight`
-- `CenterLeft`, `CenterRight`
-- `BottomLeft`, `BottomCenter`, `BottomRight`
-- `Custom`: Set custom X and Y coordinates on the native side.
+## Advanced Branding (Text + Image)
+Insert a logo and text with a background strip.
+
+```dart
+final branded = await PdfUtils.addWatermark(
+  filePath: '/path/to/doc.pdf',
+  text: '{image} Branded Report by BipScanner',
+  imagePath: '/path/to/logo.png',
+  backgroundColor: '#FFFF00', // Yellow strip
+  fontSize: 20,
+  opacity: 0.2,
+  placement: PdfWatermarkPlacement.bottomRight,
+);
+```
+
+### Key Notes
+- `color` and `backgroundColor` use Standard Hex strings (`#RRGGBB`).
+- Images under the `{image}` tag are automatically scaled to the `fontSize` height while maintaining aspect ratio.
+- Opacity affects the entire watermark layer.
