@@ -165,9 +165,10 @@ class _PageManipulationFeatureState extends State<PageManipulationFeature> {
     try {
       final file = await PdfUtils.addPageNumbers(
         filePath: result.files.single.path!,
-        customText: 'Report - Page {n} of {total}',
+        customText: '{image} Report - Page {n} of {total}',
+        imagePath: r'D:\Android\flutter_projects\bip_scanner\plugins\pdf_utils\example\assets\logo.png',
         fontSize: 10,
-        placement: 'BOTTOM_RIGHT',
+        placement: PdfTextPlacement.bottomRight,
       );
       if (file != null) {
         widget.onStatusChange('Numbered PDF: ${file.path}');

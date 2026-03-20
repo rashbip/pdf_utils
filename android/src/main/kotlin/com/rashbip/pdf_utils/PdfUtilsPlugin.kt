@@ -114,11 +114,12 @@ class PdfUtilsPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             "addPageNumbers" -> {
                 val filePath = call.argument<String>("filePath") ?: ""
                 val customText = call.argument<String>("customText")
+                val imagePath = call.argument<String>("imagePath")
                 val fontSize = call.argument<Double>("fontSize") ?: 12.0
                 val placementStr = call.argument<String>("placement") ?: "BOTTOM_CENTER"
                 val placement = runCatching { TextPlacement.valueOf(placementStr) }.getOrDefault(TextPlacement.BOTTOM_CENTER)
                 val pages = call.argument<List<Int>>("pages")
-                executeInBackground(result) { addPageNumbersToPdf(filePath, customText, fontSize.toFloat(), placement, pages, activity) }
+                executeInBackground(result) { addPageNumbersToPdf(filePath, customText, imagePath, fontSize.toFloat(), placement, pages, activity) }
             }
             "removeBlankPages" -> {
                 val filePath = call.argument<String>("filePath") ?: ""

@@ -3,27 +3,35 @@
 `pdf_utils` provides a flexible way to add page numbers, headers, and footers to your PDF documents.
 
 ## Dynamic Tags
-You can include special tags in your text that will be replaced during processing:
 - `{n}`: Current page number (1-based).
 - `{total}`: Total pages in the document.
+- `{image}`: Inline image placeholder (requires `imagePath`).
 
 ## Placements
-Supported quadrants for text placement:
-- `TOP_LEFT`, `TOP_CENTER`, `TOP_RIGHT`
-- `BOTTOM_LEFT`, `BOTTOM_CENTER`, `BOTTOM_RIGHT` (Default: `BOTTOM_CENTER`)
+- `PdfTextPlacement.topLeft`, `PdfTextPlacement.topCenter`, `PdfTextPlacement.topRight`
+- `PdfTextPlacement.bottomLeft`, `PdfTextPlacement.bottomCenter`, `PdfTextPlacement.bottomRight` (Default)
 
 ## Basic Usage
 ```dart
-import 'package:pdf_utils/pdf_utils.dart';
+final numbered = await PdfUtils.addPageNumbers(
+  filePath: '/path/to/doc.pdf',
+  customText: 'Page {n} of {total}',
+  fontSize: 10,
+  placement: PdfTextPlacement.bottomRight,
+);
+```
 
-void addNumbers() async {
-  final numbered = await PdfUtils.addPageNumbers(
-    filePath: '/path/to/my_doc.pdf',
-    customText: 'Page {n} of {total}', // Tags will be replaced
-    fontSize: 10,
-    placement: 'BOTTOM_RIGHT',
-  );
-}
+## Inline Images
+You can insert an image inside your text line. The image will be automatically scaled to match the `fontSize` while maintaining its aspect ratio.
+
+```dart
+final numbered = await PdfUtils.addPageNumbers(
+  filePath: '/path/to/my_doc.pdf',
+  customText: 'Report by {image} - Page {n}', 
+  imagePath: '/path/to/logo.png',
+  fontSize: 10,
+  placement: PdfTextPlacement.topCenter,
+);
 ```
 
 ## Selective Numbering

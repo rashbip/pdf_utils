@@ -361,21 +361,41 @@ class PdfUtils {
   }
 
   /// Adds page numbers or custom text to the PDF at specific placements.
-  /// [customText] can include {n} for current page and {total} for total pages.
+  /// [customText] can include {n} for current page, {total} for total pages, and {image} for an optional image.
   static Future<File?> addPageNumbers({
     required String filePath,
     String? customText,
+    String? imagePath,
     double fontSize = 12,
-    String placement = 'BOTTOM_CENTER', // 'TOP_LEFT', 'TOP_CENTER', 'TOP_RIGHT', 'BOTTOM_LEFT', 'BOTTOM_CENTER', 'BOTTOM_RIGHT'
+    PdfTextPlacement placement = PdfTextPlacement.bottomCenter,
     List<int>? pages,
   }) async {
+    final String placementStr = _placementToString(placement);
+
     final String? resultPath = await _channel.invokeMethod('addPageNumbers', {
       'filePath': filePath,
       'customText': customText,
+      'imagePath': imagePath,
       'fontSize': fontSize,
-      'placement': placement,
+      'placement': placementStr,
       'pages': pages,
     });
     return resultPath != null ? File(resultPath) : null;
   }
+
+  static String _placementToString(PdfTextPlacement placement) {
+    return placement.toString().split('.').last.toUpperCase().replaceAllMapped(
+      RegExp(r'([A-Z])'), 
+      (match) => '_${match.group(1)}'
+    ).replaceAll(RegExp(r'^_'), '');
+  }
+}
+
+enum PdfTextPlacement {
+  topLeft,
+  topCenter,
+  topRight,
+  bottomLeft,
+  bottomCenter,
+  bottomRight,
 }
