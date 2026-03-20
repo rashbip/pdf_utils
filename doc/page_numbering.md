@@ -2,6 +2,9 @@
 
 `pdf_utils` provides a flexible way to add page numbers, headers, and footers to your PDF documents.
 
+![Page Numbering Example](screenshots/add_footer_header.png)
+*Figure: Adding dynamic page numbers with the {n} and {total} tags.*
+
 ## Dynamic Tags
 - `{total}`: Total pages in the document.
 - `{image}`: Inline image placeholder (requires `imagePath`).

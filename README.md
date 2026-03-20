@@ -12,11 +12,33 @@ A comprehensive, standalone Flutter plugin for professional PDF manipulation and
 
 ## Showcase
 
-<p align="center">
-  <img src="doc/screenshots/invoice_generator.png" width="30%" alt="Invoice Demo" />
-  <img src="doc/screenshots/image_to_pdf.png" width="30%" alt="App Home" />
-  <img src="doc/screenshots/pdf_to_images.png" width="30%" alt="PDF Extraction" />
-</p>
+### 🎨 Creation & Design
+| Invoice Generation | Image to PDF | Advanced Watermark |
+| :---: | :---: | :---: |
+| ![Invoice Demo](doc/screenshots/invoice_generator.png) | ![App Home](doc/screenshots/image_to_pdf.png) | ![Watermarking](doc/screenshots/watermarking.png) |
+| *Professional Invoices* | *Native Image-to-PDF* | *Advanced Branding* |
+
+### 📄 Page Manipulation & Assembly
+| Reorder & Delete | Insert Page/Image | Dynamic Numbering |
+| :---: | :---: | :---: |
+| ![Reorder/Delete](doc/screenshots/reorder.png) | ![Insert Page](doc/screenshots/insert.png) | ![Page Numbering](doc/screenshots/add_footer_header.png) |
+| *Page Reorganization* | *Flexible Insertion* | *Headers & Footers* |
+
+| Merge PDFs | Split PDFs | Page Resizing |
+| :---: | :---: | :---: |
+| ![Merge PDF](doc/screenshots/merge.png) | ![Split PDF](doc/screenshots/split.png) | ![Resize Page](doc/screenshots/resize_pages.png) |
+| *Native High-Speed Merge* | *Selective Splitting* | *A4/Target Rescaling* |
+
+### 🛠️ Utilities & Analysis
+| Native Printing | PDF Compression | Security Status |
+| :---: | :---: | :---: |
+| ![Native Print](doc/screenshots/print.png) | ![Compression](doc/screenshots/compress.png) | ![Security Status](doc/screenshots/check_security.png) |
+| *System Print Dialog* | *File Size Optimization* | *Permission Analysis* |
+
+| Image Extraction | Long Image | Text Extraction |
+| :---: | :---: | :---: |
+| ![Extraction](doc/screenshots/pdf_to_images.png) | ![Long Image](doc/screenshots/long_image.png) | ![Text Extraction](doc/screenshots/extract_text.png) |
+| *Page to Image* | *Long Vertical Layouts* | *Robust Text Retrieval* |
 
 ## Features
 

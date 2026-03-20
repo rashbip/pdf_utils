@@ -1,5 +1,9 @@
 # Text Extraction
 
+`pdf_utils` provides powerful text extraction from PDF documents using the robust PDFBox engine.
+
+![Text Extraction](screenshots/extract_text.png)
+*Figure: Extracting text from specific pages or full documents.*
 The `pdf_utils` plugin provides a powerful `PDFDoc` class for extracting text and metadata from PDF documents.
 
 ## PDFDoc

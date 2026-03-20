@@ -2,6 +2,9 @@
 
 `pdf_utils` allows you to brand your documents with highly customizable text and image watermarks.
 
+![Watermarking Example](screenshots/watermarking.png)
+*Figure: Custom watermarks with text, opacity, and logo placement.*
+
 ## New Features (v3.2.1+)
 - **Inline Images**: Embed your logo using the `{image}` tag.
 - **Opacity**: Control transparency (0.0 to 1.0).

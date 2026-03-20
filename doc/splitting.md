@@ -1,5 +1,13 @@
-# PDF Splitting
+# Merging & Splitting
+`pdf_utils` provides native high-performance merging and splitting methods.
 
+## Merging PDFs
+![Merge PDFs](screenshots/merge.png)
+*Figure: High-speed native merging of multiple PDF documents.*
+
+## Splitting PDFs
+![Split PDFs](screenshots/split.png)
+*Figure: Splitting a PDF by fixed page count or specific page numbers.*
 Splitting PDF files into multiple smaller documents is simple with `pdf_utils`.
 
 ## Split by Page Count

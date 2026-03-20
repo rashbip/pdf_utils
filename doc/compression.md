@@ -1,6 +1,9 @@
 # PDF Compression
 
-The `pdf_utils` plugin provides highly optimized native methods to reduce PDF file size.
+`pdf_utils` provides a way to compress PDF files by reducing image quality and scaling down images.
+
+![PDF Compression](screenshots/compress.png)
+*Figure: Compressing PDFs to reduce file size.*
 
 ## Native Compression
 You can shrink PDF files by optimizing internal images and removing unneeded embedded fonts.

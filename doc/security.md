@@ -1,6 +1,14 @@
 # PDF Security
 
-The `pdf_utils` plugin provides robust security features, including password protection and advanced permission settings using the iText7 library.
+`pdf_utils` provides encryption, decryption, and security permission analysis.
+
+## Password Protection
+![Lock Unlock PDFs](screenshots/lock_unlock.png)
+*Figure: Encrypting and Decrypting PDFs.*
+
+## Permission Analysis
+![Security Status](screenshots/check_security.png)
+*Figure: Checking PDF validity and detailed security permissions.*
 
 ## PDF Validity & Security Checks
 Verify if a PDF is valid and see what permissions it has.

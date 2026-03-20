@@ -2,8 +2,12 @@
 
 The `pdf_utils` plugin provides tools to analyze PDF structure and page dimensions.
 
-## Getting Page Sizes
-Retrieve the physical dimensions (width and height) for every page in a PDF file.
+## Page Sizes & Dimensions
+
+`pdf_utils` provides a way to get the dimensions of all pages in a PDF file.
+
+![Page Sizes](screenshots/get_page_size.jpg)
+*Figure: Retrieving the width and height of every page in a PDF.*
 
 ```dart
 import 'package:pdf_utils/pdf_utils.dart';

@@ -1,5 +1,10 @@
 # PDF Resizing
 
+`pdf_utils` providing native high-performance PDF page resizing.
+
+![Resize PDF](screenshots/resize_pages.png)
+*Figure: Resizing specific pages or entire documents to target dimensions.*
+
 The resizing feature in `pdf_utils` allows you to scale PDF pages to match specific target dimensions while preserving the content's integrity.
 
 ## Smart Resizing

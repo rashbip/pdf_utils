@@ -3,6 +3,9 @@
 Page manipulation in `pdf_utils` allows you to reorganize a PDF document efficiently.
 
 ## Reorder, Delete, and Rotate
+![Page Reordering](screenshots/reorder.png)
+*Figure: Interface for page reordering, deletion, and rotation.*
+
 You can perform complex reorganizations in a single call.
 
 ```dart
@@ -30,6 +33,9 @@ void manipulate() async {
 - Any page not in the `reorder` list but also not in the `delete` list won't be in the final document.
 
 ## Page Insertion
+![Page Insertion](screenshots/insert.png)
+*Figure: Feature to insert images and other PDF documents into a PDF file.*
+
 `pdf_utils` allows you to insert new pages (from images or other PDFs) into an existing document with flexible positioning.
 
 ```dart
@@ -65,6 +71,9 @@ final cleaned = await PdfUtils.removeBlankPages(
 ```
 
 ## Native PDF Printing
+![PDF Printing](screenshots/print.png)
+*Figure: Native system print dialog launched from the app.*
+
 Launch the system's standard print dialog. Supports virtual printing (Save as PDF) and physical printers.
 
 ```dart
