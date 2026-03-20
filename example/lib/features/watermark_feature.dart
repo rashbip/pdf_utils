@@ -21,13 +21,15 @@ class _WatermarkFeatureState extends State<WatermarkFeature> {
 
     widget.onStatusChange('Watermarking PDF...');
     try {
-      final file = await PdfUtils.watermarkPdf(
+      final file = await PdfUtils.addWatermark(
         filePath: result.files.single.path!,
-        text: 'BIP SCANNER',
+        text: '{image} BIP SCANNER',
+        imagePath: r'D:\Android\flutter_projects\bip_scanner\plugins\pdf_utils\example\assets\logo.png',
         color: '#FF0000',
-        opacity: 0.15,
-        rotation: 45,
-        fontSize: 60,
+        backgroundColor: '#FFFFE0', // Light yellow background
+        opacity: 0.2,
+        fontSize: 30,
+        placement: PdfWatermarkPlacement.center,
       );
       if (file != null) {
         widget.onStatusChange('PDF Watermarked: ${file.path}');

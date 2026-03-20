@@ -121,6 +121,33 @@ class PdfUtilsPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 val pages = call.argument<List<Int>>("pages")
                 executeInBackground(result) { addPageNumbersToPdf(filePath, customText, imagePath, fontSize.toFloat(), placement, pages, activity) }
             }
+            "printPdf" -> {
+                val filePath = call.argument<String>("filePath") ?: ""
+                val jobName = call.argument<String>("jobName") ?: "PDF Print Job"
+                printPdfFile(filePath, jobName, activity)
+                result.success(null)
+            }
+            "addWatermark" -> {
+                val filePath = call.argument<String>("filePath") ?: ""
+                val text = call.argument<String>("text") ?: ""
+                val imagePath = call.argument<String>("imagePath")
+                val fontSize = call.argument<Double>("fontSize") ?: 40.0
+                val color = call.argument<String>("color") ?: "#000000"
+                val backgroundColor = call.argument<String>("backgroundColor")
+                val opacity = call.argument<Double>("opacity") ?: 0.5
+                val placementStr = call.argument<String>("placement") ?: "CENTER"
+                val placement = runCatching { WatermarkPlacement.valueOf(placementStr) }.getOrDefault(WatermarkPlacement.CENTER)
+                val x = call.argument<Double>("x")
+                val y = call.argument<Double>("y")
+                
+                executeInBackground(result) {
+                    getWatermarkedPDFPath(
+                        filePath, text, imagePath, fontSize.toFloat(), 
+                        color, backgroundColor, opacity.toFloat(),
+                        placement, x?.toFloat(), y?.toFloat(), activity
+                    )
+                }
+            }
             "removeBlankPages" -> {
                 val filePath = call.argument<String>("filePath") ?: ""
                 executeInBackground(result) { removeBlankPagesFromPdf(filePath, activity) }

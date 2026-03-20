@@ -179,10 +179,37 @@ class _PageManipulationFeatureState extends State<PageManipulationFeature> {
     }
   }
 
+  Future<void> _printPdf() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+    if (result == null || result.files.single.path == null) return;
+
+    widget.onStatusChange('Opening system print dialog...');
+    try {
+      await PdfUtils.printPdf(
+        filePath: result.files.single.path!,
+        jobName: 'BipScanner_Document',
+      );
+      widget.onStatusChange('Print dialog finished.');
+    } catch (e) {
+      widget.onStatusChange('Error printing PDF: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
+        _buildFeatureCard(
+          title: 'Print PDF',
+          description: 'Open the system print dialog for a document.',
+          icon: Icons.print,
+          onPressed: _printPdf,
+          color: Colors.blueGrey.shade50,
+        ),
+        const SizedBox(height: 12),
         _buildFeatureCard(
           title: 'Add Page Numbers',
           description: 'Apply custom numbering with {n} and {total} tags.',

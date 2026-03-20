@@ -64,7 +64,29 @@ class PdfPageSize {
   }
 }
 
-/// A utility class for advanced PDF operations. Version 3.0.0.
+enum PdfTextPlacement {
+  topLeft,
+  topCenter,
+  topRight,
+  bottomLeft,
+  bottomCenter,
+  bottomRight,
+}
+
+enum PdfWatermarkPlacement {
+  topLeft,
+  topCenter,
+  topRight,
+  centerLeft,
+  center,
+  centerRight,
+  bottomLeft,
+  bottomCenter,
+  bottomRight,
+  custom,
+}
+
+/// A utility class for advanced PDF operations. Version 3.2.0.
 class PdfUtils {
   static const MethodChannel _channel = MethodChannel('pdf_utils');
 
@@ -129,26 +151,36 @@ class PdfUtils {
     return resultPath != null ? File(resultPath) : null;
   }
 
-  /// Adds a text watermark to a PDF file.
-  static Future<File?> watermarkPdf({
+  /// Adds a watermark to the PDF with advanced customization.
+  /// [text] can include {image} if [imagePath] is provided.
+  static Future<File?> addWatermark({
     required String filePath,
     required String text,
-    double fontSize = 40.0,
-    String layer = 'OverContent',
-    double opacity = 0.3,
-    double rotation = 45.0,
-    String color = '#000000',
-    String position = 'Center',
+    String? imagePath,
+    double fontSize = 40,
+    String color = '#000000', // Hex format #RRGGBB
+    String? backgroundColor, // Hex format #RRGGBB
+    double opacity = 0.5,
+    PdfWatermarkPlacement placement = PdfWatermarkPlacement.center,
+    double? customX,
+    double? customY,
   }) async {
-    final String? resultPath = await _channel.invokeMethod('watermarkPdf', {
+    final String placementStr = placement.toString().split('.').last.toUpperCase().replaceAllMapped(
+      RegExp(r'([A-Z])'), 
+      (match) => '_${match.group(1)}'
+    ).replaceAll(RegExp(r'^_'), '');
+
+    final String? resultPath = await _channel.invokeMethod('addWatermark', {
       'filePath': filePath,
       'text': text,
+      'imagePath': imagePath,
       'fontSize': fontSize,
-      'layer': layer,
-      'opacity': opacity,
-      'rotation': rotation,
       'color': color,
-      'position': position,
+      'backgroundColor': backgroundColor,
+      'opacity': opacity,
+      'placement': placementStr,
+      'x': customX,
+      'y': customY,
     });
     return resultPath != null ? File(resultPath) : null;
   }
@@ -383,19 +415,21 @@ class PdfUtils {
     return resultPath != null ? File(resultPath) : null;
   }
 
+  /// Prints a PDF document using the system's print dialog.
+  static Future<void> printPdf({
+    required String filePath,
+    String? jobName,
+  }) async {
+    await _channel.invokeMethod('printPdf', {
+      'filePath': filePath,
+      'jobName': jobName ?? 'PDF Print Job',
+    });
+  }
+
   static String _placementToString(PdfTextPlacement placement) {
     return placement.toString().split('.').last.toUpperCase().replaceAllMapped(
       RegExp(r'([A-Z])'), 
       (match) => '_${match.group(1)}'
     ).replaceAll(RegExp(r'^_'), '');
   }
-}
-
-enum PdfTextPlacement {
-  topLeft,
-  topCenter,
-  topRight,
-  bottomLeft,
-  bottomCenter,
-  bottomRight,
 }
