@@ -30,15 +30,20 @@ A comprehensive, standalone Flutter plugin for professional PDF manipulation and
 | *Native High-Speed Merge* | *Selective Splitting* | *A4/Target Rescaling* |
 
 ### 🛠️ Utilities & Analysis
-| Native Printing | PDF Compression | Security Status |
+| Advanced Viewer | Lightweight Thumbnails | Security Status |
 | :---: | :---: | :---: |
-| ![Native Print](doc/screenshots/print.png) | ![Compression](doc/screenshots/compress.png) | ![Security Status](doc/screenshots/check_security.png) |
-| *System Print Dialog* | *File Size Optimization* | *Permission Analysis* |
+| ![PDF Viewer](doc/screenshots/pdf_viewer.png) | ![Thumbnails](doc/screenshots/get_thumbnails.png) | ![Security Status](doc/screenshots/check_security.png) |
+| *Premium BipPdfViewer* | *Fast Page Previews* | *Permission Analysis* |
 
-| Image Extraction | Long Image | Text Extraction |
+| Native Printing | PDF Compression | Image Extraction |
 | :---: | :---: | :---: |
-| ![Extraction](doc/screenshots/pdf_to_images.png) | ![Long Image](doc/screenshots/long_image.png) | ![Text Extraction](doc/screenshots/extract_text.png) |
-| *Page to Image* | *Long Vertical Layouts* | *Robust Text Retrieval* |
+| ![Native Print](doc/screenshots/print.png) | ![Compression](doc/screenshots/compress.png) | ![Extraction](doc/screenshots/pdf_to_images.png) |
+| *System Print Dialog* | *File Size Optimization* | *Page to Image* |
+
+| Long Image | Text Extraction |
+| :---: | :---: |
+| ![Long Image](doc/screenshots/long_image.png) | ![Text Extraction](doc/screenshots/extract_text.png) |
+| *Long Vertical Layouts* | *Robust Text Retrieval* |
 
 ## Features
 
@@ -63,7 +68,7 @@ Add `pdf_utils` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  pdf_utils: ^3.2.1
+  pdf_utils: ^3.3.0
 ```
 
 ## Quick Start

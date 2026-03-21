@@ -1,3 +1,10 @@
+# 3.3.0
+
+* **New Feature: Advanced PDF Viewer (`BipPdfViewer`)**: A premium-looking viewer with built-in thumbnails, navigation drawer, and print integration.
+* **New Feature: Lightweight Thumbnails (`getPdfThumbnails`)**: Generate rapid, low-resolution page previews in milliseconds for optimized memory usage.
+* **Feature Update: Dynamic PDF-to-Image Scaling**: Now supports a `scale` parameter in native conversion for flexible output sizes.
+* **Bug Fixes**: Resolved circular dependencies in imports and fixed thumbnail rendering in the viewer drawer.
+
 # 3.2.1
 
 * **New Feature: Native PDF Printing**: Launch the system print dialog directly from the plugin (Android).
