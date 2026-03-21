@@ -1,6 +1,6 @@
 # pdf_utils
 
-A comprehensive, standalone Flutter plugin for professional PDF manipulation and generation.
+A comprehensive, standalone Flutter plugin for professional PDF manipulation and generation. It has 28+ tools! Just using a single small library! 
 
 [![pub package](https://img.shields.io/pub/v/pdf_utils.svg)](https://pub.dev/packages/pdf_utils)
 [![Dart](https://img.shields.io/badge/language-Dart-blue.svg)](https://dart.dev)
@@ -10,6 +10,43 @@ A comprehensive, standalone Flutter plugin for professional PDF manipulation and
 
 ---
 
+- 1. Powerful PDF Compression!
+- 2. Advanced PDF Viewer (`BipPdfViewer`)
+- 3. Lightweight PDF Thumbnails
+- 4. Page Manipulation 
+  - i. Reorder,
+  - ii. Delete,
+  - iii. Rotate,
+  - iv. Insert
+- 5. Combine/Split PDFs
+  - i. PDF Merging,
+  - ii. PDF Splitting
+- 6. PDF Resizing
+  - i. Smart PDF Resizing(Actually!),
+  - ii. Smart PDF Scaling
+- 7. Extraction
+  - i. Extract Text From PDF!
+  - ii. Extract Metadata
+  - iii. Extract Images From PDF!
+- 8. Security Status
+  - i. Check Security Status (locked/unlocked)
+  - ii. Check Permissions(If editable/printable/copyable/annotatable etc.)
+- 9. Encryption & Decryption
+  - i. Lock PDF
+  - ii. Unlock PDF
+- 10. Overlay
+  - i. Auto Page Numbering
+  - ii. Customizable headers and footers
+  - iii. Add Text Overlay
+  - iv. Add Image Overlay
+  - v. Add Text and Image at once!
+  - vi. Add Text and Image as watermark!
+- 11. Native System Printing
+- 12. High-Speed Image to PDF Conversion
+- 13. Auto Blank Page Removal!
+- 14. Professional Invoice Generation!
+- That means 28+ tools! And some small features!
+- More Features Coming Soon!
 ## Showcase
 
 ### 🎨 Creation & Design
@@ -45,23 +82,6 @@ A comprehensive, standalone Flutter plugin for professional PDF manipulation and
 | ![Long Image](doc/screenshots/long_image.png) | ![Text Extraction](doc/screenshots/extract_text.png) |
 | *Long Vertical Layouts* | *Robust Text Retrieval* |
 
-## Features
-
-- **Professional Invoice Generation**: Create stunning PDF invoices with customizable models and high-level styling.
-- **Standalone Native Processing**: Powered by native `PDFBox` (Android) and `PDFKit` (iOS) for maximum performance and reliability. **Apache 2.0 / MIT Compliant.**
-- **Smart PDF Resizing**: Rescale pages to match specific targets (like A4) while maintaining aspect ratio and centering.
-- **Dynamic Page Numbering**: Add custom headers/footers with `{n}` and `{total}` tags and inline **`{image}`** support.
-- **Advanced Watermarking**: Dynamic text and image branding with 9 placement options, opacity, and background support.
-- **Native PDF Printing**: Open the standard system print dialog directly from your app.
-- **Smart Blank Page Removal**: Automatically detect and strip empty pages from your document.
-- **Page Manipulation**: Reorder, delete, rotate, and **Insert** (images or PDF pages) in a single pass.
-- **PDF Extraction**: Efficiently extract high-quality page images and long vertical images.
-- **Text & Metadata**: Powerful text extraction and metadata retrieval using `PDFDoc` with support for encrypted documents.
-- **Security Analysis**: Retrieve detailed security permissions and validity via code.
-- **Locking & Unlocking**: Protect PDF documents with passwords or remove them entirely.
-- **Merging & Splitting**: Combine multiple PDFs or divide them by page ranges.
-- **Optimized Image Conversion**: Both standard and highly optimized native image-to-PDF converters.
-
 ## Installation
 
 Add `pdf_utils` to your `pubspec.yaml`:
@@ -80,41 +100,62 @@ final invoice = Invoice(...);
 File pdfFile = await PdfInvoiceGenerator.generate(invoice);
 ```
 
-### 2. Merging PDFs
+### 2. Merging PDFs (Native)
 
 ```dart
-File merged = await PdfUtils.mergePdfFiles(
-  filesPath: ['path1.pdf', 'path2.pdf'],
-  outputFileName: 'combined_document',
+File? merged = await PdfUtils.mergePdfs(
+  ['path1.pdf', 'path2.pdf'],
 );
 ```
 
-### 3. Text Extraction
+### 3. Advanced Viewer
+
+```dart
+Navigator.push(
+  context, 
+  MaterialPageRoute(
+    builder: (context) => BipPdfViewer(
+      filePath: 'my_doc.pdf',
+      title: 'Monthly Report',
+    )
+  )
+);
+```
+
+### 4. Text & Metadata Extraction
 
 ```dart
 final doc = await PDFDoc.fromPath('doc.pdf');
 String text = await doc.text;
 print('Total pages: ${doc.length}');
+print('Author: ${doc.info.author}');
 ```
 
-### 4. PDF Protection
+### 5. Locking a PDF
 
 ```dart
-File locked = await PdfUtils.protectPdf(
-  inputPath: 'doc.pdf',
-  password: 'secret_password',
-  outputFileName: 'secure_doc',
+File? secured = await PdfUtils.encryptPdf(
+  filePath: 'doc.pdf',
+  userPassword: 'my_password',
+  allowPrinting: true,
 );
 ```
 
 ## Documentation
 
-For more detailed guides, check out the [doc](doc/) directory:
-- [Invoice Generation](doc/invoice_generation.md)
-- [PDF Manipulation (Conversion, Merging, Security)](doc/pdf_manipulation.md)
-- [Resizing & Scaling](doc/resizing.md)
-- [Page Numbering & Headers](doc/page_numbering.md)
-- [Text Extraction & Metadata](doc/text_extraction.md)
+Full detailed guides are available in the **[doc/](doc/)** folder:
+- **[Invoice Generation](doc/invoice_generation.md)**
+- **[PDF Viewer](doc/viewer.md)**
+- **[Lightweight Thumbnails](doc/thumbnails.md)**
+- **[Page Manipulation](doc/manipulation.md)**
+- **[Watermarking](doc/watermarking.md)**
+- **[Page Numbering](doc/page_numbering.md)**
+- **[PDF Resizing](doc/resizing.md)**
+- **[Security & Protection](doc/security.md)**
+- **[Text Extraction](doc/text_extraction.md)**
+- **[Splitting & Merging](doc/splitting.md)**
+- **[Compression](doc/compression.md)**
+- **[Conversion & Extraction](doc/conversion.md)**
 
 ## Example App
 
