@@ -12,6 +12,7 @@ import 'features/split_feature.dart';
 import 'features/page_manipulation_feature.dart';
 import 'features/info_feature.dart';
 import 'features/viewer_feature.dart';
+import 'features/thumbnails_feature.dart';
 
 void main() {
   runApp(const MyApp());
@@ -86,6 +87,9 @@ class _MyHomePageState extends State<MyHomePage> {
               const SizedBox(height: 12),
               
               ViewerFeature(onStatusChange: _onStatusChange),
+              const SizedBox(height: 12),
+
+              ThumbnailsFeature(onStatusChange: _onStatusChange),
               const SizedBox(height: 12),
               
               ImageToPdfFeature(onStatusChange: _onStatusChange),

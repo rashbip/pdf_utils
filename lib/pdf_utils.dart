@@ -269,7 +269,11 @@ class PdfUtils {
   static Future<List<String>> pdfToImages({
     required String pdfPath,
     required String outputDirectory,
+    List<int>? pagesIndex,
     String? password,
+    double scale = 3.0,
+    int quality = 90,
+    String imgFormat = 'jpg',
   }) async {
     final dir = Directory(outputDirectory);
     if (!await dir.exists()) {
@@ -279,12 +283,45 @@ class PdfUtils {
       'inputPath': pdfPath,
       'outputDirectory': outputDirectory,
       'config': {
-        'imgFormat': 'jpg',
-        'quality': 90,
+        'imgFormat': imgFormat,
+        'quality': quality,
+        'scale': scale,
+        'pagesIndex': pagesIndex,
       },
       'password': password ?? "", 
     });
     return imagePaths?.cast<String>() ?? [];
+  }
+
+  /// Generates rapid thumbnails for PDF pages. Lightweight and fast.
+  /// [page] (1-indexed) extracts a single page.
+  /// [range] extracts specific pages.
+  /// If both are null, extracts all pages.
+  static Future<List<File>> getPdfThumbnails({
+    required String filePath,
+    int? page,
+    List<int>? range,
+    double scale = 0.6, // Lightweight default
+    int quality = 60,
+  }) async {
+    final String tempDir = Directory.systemTemp.path;
+    final String thumbDir = '$tempDir/thumbs_${DateTime.now().microsecondsSinceEpoch}';
+    
+    List<int>? pageIndex;
+    if (page != null) {
+      pageIndex = [page - 1];
+    } else if (range != null) {
+      pageIndex = range.map((e) => e - 1).toList();
+    }
+
+    final images = await pdfToImages(
+      pdfPath: filePath,
+      outputDirectory: thumbDir,
+      pagesIndex: pageIndex,
+      scale: scale,
+      quality: quality,
+    );
+    return images.map((p) => File(p)).toList();
   }
 
   /// Converts a PDF to a single long image.

@@ -20,6 +20,7 @@ class PdfToImagesConfig {
     var pagesIndex: List<Int>? = null
     var imgFormat: ImageFormat = ImageFormat.PNG
     var quality: Int = 100
+    var scale: Float = 3.0f
 
     constructor(configMap: Map<String, Any?>?) {
         configMap ?: return
@@ -43,6 +44,9 @@ class PdfToImagesConfig {
         val rawQuality = configMap["quality"]
         quality = (rawQuality as? Number)?.toInt() ?: quality
         quality = quality.coerceIn(0, 100)
+
+        val rawScale = configMap["scale"]
+        scale = (rawScale as? Number)?.toFloat() ?: scale
     }
 
     constructor()
@@ -82,7 +86,7 @@ object PdfToImageHelper {
         for (pageIndex in pageNumbers) {
             val page = renderer.openPage(pageIndex)
             val bitmap = try {
-                renderPageToBitmap(page)
+                renderPageToBitmap(page, config.scale)
             } finally {
                 page.close()
             }
@@ -130,8 +134,8 @@ object PdfToImageHelper {
             for (pageIndex in pageNumbers) {
                 val page = renderer.openPage(pageIndex)
                 try {
-                    val width = (page.width * RENDER_SCALE).roundToInt().coerceAtLeast(1)
-                    val height = (page.height * RENDER_SCALE).roundToInt().coerceAtLeast(1)
+                    val width = (page.width * config.scale).roundToInt().coerceAtLeast(1)
+                    val height = (page.height * config.scale).roundToInt().coerceAtLeast(1)
                     pageSizes.add(PageDimension(width, height))
                 } finally {
                     page.close()
@@ -183,9 +187,9 @@ object PdfToImageHelper {
         }
     }
 
-    private fun renderPageToBitmap(page: PdfRenderer.Page): Bitmap {
-        val width = (page.width * RENDER_SCALE).roundToInt().coerceAtLeast(1)
-        val height = (page.height * RENDER_SCALE).roundToInt().coerceAtLeast(1)
+    private fun renderPageToBitmap(page: PdfRenderer.Page, scale: Float): Bitmap {
+        val width = (page.width * scale).roundToInt().coerceAtLeast(1)
+        val height = (page.height * scale).roundToInt().coerceAtLeast(1)
         return renderPageToBitmap(page, width, height)
     }
 
@@ -197,5 +201,4 @@ object PdfToImageHelper {
         return bitmap
     }
 
-    private const val RENDER_SCALE = 3.0f
 }

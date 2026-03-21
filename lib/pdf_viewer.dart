@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:pdfx/pdfx.dart';
 import 'pdf_utils.dart'; // For printPdf and enums
@@ -269,7 +270,7 @@ class _CompactControls extends StatelessWidget {
   }
 }
 
-class _ThumbnailsSheet extends StatelessWidget {
+class _ThumbnailsSheet extends StatefulWidget {
   final String filePath;
   final int totalCount;
   final int currentPage;
@@ -283,9 +284,42 @@ class _ThumbnailsSheet extends StatelessWidget {
   });
 
   @override
+  State<_ThumbnailsSheet> createState() => _ThumbnailsSheetState();
+}
+
+class _ThumbnailsSheetState extends State<_ThumbnailsSheet> {
+  Map<int, File> _thumbnails = {};
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadThumbnails();
+  }
+
+  Future<void> _loadThumbnails() async {
+    try {
+      final thumbs = await PdfUtils.getPdfThumbnails(
+        filePath: widget.filePath,
+        scale: 0.3, // Very lightweight for grid
+      );
+      if (mounted) {
+        setState(() {
+          for (int i = 0; i < thumbs.length; i++) {
+            _thumbnails[i + 1] = thumbs[i];
+          }
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.75,
+      height: MediaQuery.of(context).size.height * 0.8,
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
@@ -304,70 +338,73 @@ class _ThumbnailsSheet extends StatelessWidget {
               ],
             ),
           ),
-          Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                childAspectRatio: 0.7,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-              ),
-              itemCount: totalCount,
-              itemBuilder: (context, index) {
-                final page = index + 1;
-                final isCurrent = page == currentPage;
-                return GestureDetector(
-                  onTap: () => onPageSelect(page),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: isCurrent ? Colors.deepPurple : Colors.grey.shade300, 
-                              width: isCurrent ? 2 : 1
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: isCurrent ? [
-                              BoxShadow(color: Colors.deepPurple.withOpacity(0.1), blurRadius: 8, spreadRadius: 2)
-                            ] : null,
-                            color: isCurrent ? Colors.deepPurple.withOpacity(0.05) : Colors.grey.shade50,
-                          ),
-                          child: Stack(
-                            children: [
-                              Center(
-                                child: Icon(
-                                  Icons.description_rounded, 
-                                  color: isCurrent ? Colors.deepPurple.withOpacity(0.4) : Colors.grey.shade300, 
-                                  size: 40
-                                ),
+          if (_isLoading && _thumbnails.isEmpty)
+             const Expanded(child: Center(child: CircularProgressIndicator())),
+          if (!_isLoading || _thumbnails.isNotEmpty)
+            Expanded(
+              child: GridView.builder(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  childAspectRatio: 0.65,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                ),
+                itemCount: widget.totalCount,
+                itemBuilder: (context, index) {
+                  final page = index + 1;
+                  final isCurrent = page == widget.currentPage;
+                  final thumb = _thumbnails[page];
+
+                  return GestureDetector(
+                    onTap: () => widget.onPageSelect(page),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            clipBehavior: Clip.antiAlias,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: isCurrent ? Colors.deepPurple : Colors.grey.shade300, 
+                                width: isCurrent ? 2 : 1
                               ),
-                              if (isCurrent)
-                                Positioned(
-                                  top: 4,
-                                  right: 4,
-                                  child: Icon(Icons.check_circle_rounded, color: Colors.deepPurple, size: 18),
-                                ),
-                            ],
+                              borderRadius: BorderRadius.circular(12),
+                              color: Colors.grey.shade50,
+                            ),
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                if (thumb != null)
+                                  Image.file(thumb, fit: BoxFit.cover)
+                                else
+                                  Center(child: Icon(Icons.description_rounded, color: Colors.grey.shade300, size: 40)),
+                                if (isCurrent)
+                                  Container(color: Colors.deepPurple.withOpacity(0.1)),
+                                if (isCurrent)
+                                  Positioned(
+                                    top: 4,
+                                    right: 4,
+                                    child: Icon(Icons.check_circle_rounded, color: Colors.deepPurple, size: 18),
+                                  ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Page $page', 
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal, 
-                          color: isCurrent ? Colors.deepPurple : Colors.black87
-                        )
-                      ),
-                    ],
-                  ),
-                );
-              },
+                        const SizedBox(height: 8),
+                        Text(
+                          'Page $page', 
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal, 
+                            color: isCurrent ? Colors.deepPurple : Colors.black87
+                          )
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
         ],
       ),
     );
